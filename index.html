@@ -61,9 +61,17 @@
     /* Winner row glow */
     .row-winner {
       background: rgba(99, 102, 241, 0.06);
+      border-left: 2px solid transparent;
+      animation: winner-pulse 3s ease-in-out infinite;
     }
     .row-winner:hover {
       background: rgba(99, 102, 241, 0.1) !important;
+    }
+
+    /* 5. Winner pulse — subtle left-border glow, 3s cycle */
+    @keyframes winner-pulse {
+      0%, 100% { border-left-color: rgba(99, 102, 241, 0.15); }
+      50%      { border-left-color: rgba(129, 140, 248, 0.5); }
     }
 
     /* Loser row muted */
@@ -78,6 +86,50 @@
     .section-divider {
       height: 1px;
       background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08) 50%, transparent);
+    }
+
+    /* 6. Number shimmer — single pass light reflection */
+    @keyframes shimmer-once {
+      0%   { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+    .shimmer-ready {
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255,255,255,0.08) 45%,
+        rgba(255,255,255,0.18) 50%,
+        rgba(255,255,255,0.08) 55%,
+        transparent 100%
+      );
+      background-size: 200% 100%;
+      background-position: -200% center;
+      -webkit-background-clip: text;
+      background-clip: text;
+      /* text color stays via class; shimmer is additive */
+    }
+    .shimmer-run {
+      animation: shimmer-once 1s ease-in-out forwards;
+    }
+
+    /* 4. Insight cards entrance */
+    .insight-card {
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+    }
+    .insight-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Live pulse dot */
+    @keyframes live-dot {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: 0.3; }
+    }
+    .live-dot {
+      animation: live-dot 2s ease-in-out infinite;
     }
   </style>
 
@@ -171,9 +223,11 @@
         <h2 class="text-2xl md:text-3xl font-bold tracking-tight">Leaderboard</h2>
         <p class="text-sm text-text-secondary mt-1">Ranked by net return after gas and slippage</p>
       </div>
-      <p class="hidden md:block text-xs text-text-muted">
+      <!-- 3. Dynamic last-updated with live pulse -->
+      <div class="hidden md:flex items-center gap-2 text-xs text-text-muted">
+        <span class="w-1.5 h-1.5 rounded-full bg-success live-dot"></span>
         Updated <span id="last-updated"></span>
-      </p>
+      </div>
     </div>
 
     <div class="overflow-x-auto table-scroll glass-card">
@@ -325,19 +379,38 @@
 
   <!-- Load Data & Render -->
   <script>
+    // ── Animation Utilities ──
+
+    // 1. Animated counter using requestAnimationFrame
+    function animateValue(el, start, end, duration, formatter) {
+      const startTime = performance.now();
+      function tick(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // Ease-out cubic for a satisfying deceleration
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = start + (end - start) * eased;
+        el.textContent = formatter(current);
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    // ── Main ──
     fetch('backtest-data.json')
       .then(res => res.json())
       .then(data => {
-        // Date
-        document.getElementById('last-updated').textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        // 3. Dynamic last-updated — always visitor's current date
+        document.getElementById('last-updated').textContent =
+          new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
         const fmtDollar = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         const totalStrategies = data.strategies.length;
 
-        // ── Leaderboard Table ──
+        // ── Leaderboard Table with Animated Counters ──
         const tbody = document.getElementById('leaderboard-body');
 
-        data.strategies.forEach(strategy => {
+        data.strategies.forEach((strategy, idx) => {
           const row = document.createElement('tr');
           const isUnflat = strategy.name.includes('Unflat');
           const isWinner = strategy.rank === 1;
@@ -349,6 +422,7 @@
           else rowClass += ' hover:bg-white/[0.02]';
           row.className = rowClass;
 
+          // Create cells with data-animate placeholders
           row.innerHTML = `
             <td class="px-5 py-4">
               <span class="text-lg font-bold ${isWinner ? 'text-accent-light' : 'text-text-muted'}">${strategy.rank}</span>
@@ -357,16 +431,16 @@
               <span class="font-semibold text-sm ${isUnflat ? 'text-accent-light' : 'text-text-primary'}">${strategy.name}</span>
             </td>
             <td class="px-5 py-4 text-right font-mono text-sm">
-              $${fmtDollar(strategy.endingValue)}
+              <span data-animate="dollar" data-target="${strategy.endingValue}">$0.00</span>
             </td>
             <td class="px-5 py-4 text-right font-mono text-sm font-medium ${strategy.netReturn > 0 ? 'text-success' : 'text-error'}">
-              ${strategy.netReturn > 0 ? '+' : ''}${strategy.netReturn.toFixed(2)}%
+              <span data-animate="percent" data-target="${strategy.netReturn}">0.00%</span>
             </td>
             <td class="px-5 py-4 text-right font-mono text-sm ${strategy.gasFees > 0 ? 'text-error/70' : 'text-text-muted'}">
-              ${strategy.gasFees > 0 ? '-' : ''}$${fmtDollar(strategy.gasFees)}
+              <span data-animate="gas" data-target="${strategy.gasFees}">${strategy.gasFees > 0 ? '-' : ''}$0.00</span>
             </td>
             <td class="px-5 py-4 text-right font-mono text-sm text-text-secondary">
-              ${strategy.rebalances}
+              <span data-animate="int" data-target="${strategy.rebalances}">0</span>
             </td>
             <td class="px-5 py-4 text-right font-mono text-sm text-text-secondary">
               ${strategy.sharpeRatio.toFixed(2)}
@@ -377,36 +451,85 @@
           `;
 
           tbody.appendChild(row);
+
+          // 1. Staggered counter animation: row N starts at N*200ms
+          const delay = idx * 200;
+          const duration = 1500;
+
+          setTimeout(() => {
+            // Ending Value
+            const dollarEl = row.querySelector('[data-animate="dollar"]');
+            animateValue(dollarEl, 0, strategy.endingValue, duration,
+              (v) => '$' + fmtDollar(v));
+
+            // Net Return
+            const pctEl = row.querySelector('[data-animate="percent"]');
+            animateValue(pctEl, 0, strategy.netReturn, duration,
+              (v) => (v > 0 ? '+' : '') + v.toFixed(2) + '%');
+
+            // Gas Fees
+            const gasEl = row.querySelector('[data-animate="gas"]');
+            animateValue(gasEl, 0, strategy.gasFees, duration,
+              (v) => (strategy.gasFees > 0 ? '-' : '') + '$' + fmtDollar(v));
+
+            // Rebalances
+            const intEl = row.querySelector('[data-animate="int"]');
+            animateValue(intEl, 0, strategy.rebalances, duration,
+              (v) => Math.round(v).toString());
+          }, delay);
+
+          // 6. Shimmer on winner row after counters finish
+          if (isWinner) {
+            setTimeout(() => {
+              row.querySelectorAll('[data-animate]').forEach(el => {
+                el.classList.add('shimmer-ready', 'shimmer-run');
+              });
+            }, delay + duration + 100);
+          }
         });
 
-        // ── Insight Cards ──
+        // ── 4. Insight Cards with staggered entrance ──
         const winner = data.strategies[0];
         const bestSharpe = data.strategies.reduce((a, b) => a.sharpeRatio > b.sharpeRatio ? a : b);
         const loser = data.strategies[data.strategies.length - 1];
 
         document.getElementById('insights-container').innerHTML = `
-          <div class="glass-card p-5">
+          <div class="glass-card p-5 insight-card">
             <p class="text-xs uppercase tracking-wider text-text-muted font-medium mb-2">Winner</p>
             <p class="text-lg font-bold text-accent-light">${winner.name}</p>
             <p class="text-sm text-text-secondary mt-1">${winner.netReturn > 0 ? '+' : ''}${winner.netReturn.toFixed(2)}% return, ${winner.rebalances} rebalances, ${winner.gasFees === 0 ? 'zero gas' : '$' + fmtDollar(winner.gasFees) + ' gas'}</p>
           </div>
-          <div class="glass-card p-5">
+          <div class="glass-card p-5 insight-card">
             <p class="text-xs uppercase tracking-wider text-text-muted font-medium mb-2">Best Risk-Adjusted</p>
             <p class="text-lg font-bold text-text-primary">${bestSharpe.name}</p>
             <p class="text-sm text-text-secondary mt-1">Sharpe ratio ${bestSharpe.sharpeRatio.toFixed(2)}</p>
           </div>
-          <div class="glass-card p-5">
+          <div class="glass-card p-5 insight-card">
             <p class="text-xs uppercase tracking-wider text-text-muted font-medium mb-2">Most Active</p>
             <p class="text-lg font-bold text-text-secondary">${loser.name}</p>
             <p class="text-sm text-text-secondary mt-1">${loser.rebalances} rebalances, $${fmtDollar(loser.gasFees)} in gas fees</p>
           </div>
         `;
 
-        // ── Equity Curve Chart ──
+        // IntersectionObserver for insight cards
+        const insightCards = document.querySelectorAll('.insight-card');
+        const cardObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const cards = entry.target.parentElement.querySelectorAll('.insight-card');
+              cards.forEach((card, i) => {
+                setTimeout(() => card.classList.add('visible'), i * 150);
+              });
+              cardObserver.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.2 });
+        if (insightCards.length > 0) cardObserver.observe(insightCards[0]);
+
+        // ── 2. Equity Curve Chart with progressive draw ──
         const ctx = document.getElementById('equityChart').getContext('2d');
         const labels = Array.from({ length: data.durationDays }, (_, i) => i);
 
-        // Strategy colors matching unflat.finance palette
         const chartColors = {
           'Unflat (Static)':     { color: '#818cf8', width: 3, dash: [] },
           'DeepSeek Agent':      { color: 'rgba(255,255,255,0.3)', width: 1.5, dash: [6, 3] },
@@ -414,12 +537,30 @@
           'Claude Sonnet Agent': { color: 'rgba(255,255,255,0.15)', width: 1.5, dash: [6, 3] },
         };
 
-        const datasets = data.strategies.map(s => {
+        // Separate Unflat dataset from bot datasets for staggered reveal
+        const unflatStrategy = data.strategies.find(s => s.name.includes('Unflat'));
+        const botStrategies = data.strategies.filter(s => !s.name.includes('Unflat'));
+
+        const unflatStyle = chartColors[unflatStrategy.name];
+        const unflatDataset = {
+          label: unflatStrategy.name,
+          data: unflatStrategy.dailyValues,
+          borderColor: unflatStyle.color,
+          borderWidth: unflatStyle.width,
+          borderDash: unflatStyle.dash,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          pointHoverBackgroundColor: unflatStyle.color,
+          tension: 0.3,
+          fill: false,
+        };
+
+        const botDatasets = botStrategies.map(s => {
           const style = chartColors[s.name] || { color: 'rgba(255,255,255,0.2)', width: 1.5, dash: [4, 4] };
           return {
             label: s.name,
             data: s.dailyValues,
-            borderColor: style.color,
+            borderColor: 'transparent', // start hidden
             borderWidth: style.width,
             borderDash: style.dash,
             pointRadius: 0,
@@ -427,11 +568,11 @@
             pointHoverBackgroundColor: style.color,
             tension: 0.3,
             fill: false,
+            _targetColor: style.color, // stash for later reveal
           };
         });
 
-        // Starting capital reference line
-        datasets.push({
+        const baselineDataset = {
           label: '$1,000 start',
           data: new Array(data.durationDays).fill(1000),
           borderColor: 'rgba(255, 255, 255, 0.08)',
@@ -441,73 +582,109 @@
           pointHoverRadius: 0,
           tension: 0,
           fill: false,
-        });
+        };
 
-        new Chart(ctx, {
-          type: 'line',
-          data: { labels, datasets },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-              mode: 'index',
-              intersect: false,
-            },
-            plugins: {
-              legend: {
-                position: 'top',
-                align: 'start',
-                labels: {
-                  color: 'rgba(255,255,255,0.5)',
-                  font: { family: 'Inter', size: 11 },
-                  usePointStyle: true,
-                  pointStyle: 'line',
-                  padding: 16,
-                  filter: (item) => item.text !== '$1,000 start',
+        const allDatasets = [unflatDataset, ...botDatasets, baselineDataset];
+
+        let equityChart = null;
+        let chartAnimated = false;
+
+        function createChart() {
+          equityChart = new Chart(ctx, {
+            type: 'line',
+            data: { labels, datasets: allDatasets },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              // Progressive draw: Unflat draws over 2s
+              animation: {
+                duration: 2000,
+                easing: 'easeOutQuart',
+                onComplete: () => {
+                  // After Unflat finishes drawing, fade in bot lines
+                  setTimeout(() => {
+                    botDatasets.forEach(ds => {
+                      ds.borderColor = ds._targetColor;
+                    });
+                    equityChart.update({
+                      duration: 800,
+                      easing: 'easeOutQuart',
+                    });
+                  }, 200);
                 },
               },
-              tooltip: {
-                backgroundColor: 'rgba(0, 4, 27, 0.9)',
-                borderColor: 'rgba(255,255,255,0.1)',
-                borderWidth: 1,
-                titleColor: 'rgba(255,255,255,0.6)',
-                bodyColor: '#f5f6ff',
-                titleFont: { family: 'Inter', size: 11 },
-                bodyFont: { family: 'Inter', size: 12 },
-                padding: 12,
-                cornerRadius: 8,
-                callbacks: {
-                  title: (items) => `Day ${items[0].label}`,
-                  label: (item) => {
-                    if (item.dataset.label === '$1,000 start') return null;
-                    return ` ${item.dataset.label}: $${item.parsed.y.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+              interaction: {
+                mode: 'index',
+                intersect: false,
+              },
+              plugins: {
+                legend: {
+                  position: 'top',
+                  align: 'start',
+                  labels: {
+                    color: 'rgba(255,255,255,0.5)',
+                    font: { family: 'Inter', size: 11 },
+                    usePointStyle: true,
+                    pointStyle: 'line',
+                    padding: 16,
+                    filter: (item) => item.text !== '$1,000 start',
+                  },
+                },
+                tooltip: {
+                  backgroundColor: 'rgba(0, 4, 27, 0.9)',
+                  borderColor: 'rgba(255,255,255,0.1)',
+                  borderWidth: 1,
+                  titleColor: 'rgba(255,255,255,0.6)',
+                  bodyColor: '#f5f6ff',
+                  titleFont: { family: 'Inter', size: 11 },
+                  bodyFont: { family: 'Inter', size: 12 },
+                  padding: 12,
+                  cornerRadius: 8,
+                  callbacks: {
+                    title: (items) => `Day ${items[0].label}`,
+                    label: (item) => {
+                      if (item.dataset.label === '$1,000 start') return null;
+                      return ` ${item.dataset.label}: $${item.parsed.y.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    },
                   },
                 },
               },
-            },
-            scales: {
-              x: {
-                grid: { color: 'rgba(255,255,255,0.03)' },
-                ticks: {
-                  color: 'rgba(255,255,255,0.3)',
-                  font: { family: 'Inter', size: 10 },
-                  maxTicksLimit: 12,
-                  callback: (val) => `Day ${val}`,
+              scales: {
+                x: {
+                  grid: { color: 'rgba(255,255,255,0.03)' },
+                  ticks: {
+                    color: 'rgba(255,255,255,0.3)',
+                    font: { family: 'Inter', size: 10 },
+                    maxTicksLimit: 12,
+                    callback: (val) => `Day ${val}`,
+                  },
+                  border: { color: 'rgba(255,255,255,0.06)' },
                 },
-                border: { color: 'rgba(255,255,255,0.06)' },
-              },
-              y: {
-                grid: { color: 'rgba(255,255,255,0.03)' },
-                ticks: {
-                  color: 'rgba(255,255,255,0.3)',
-                  font: { family: 'Inter', size: 10 },
-                  callback: (val) => '$' + val.toLocaleString(),
+                y: {
+                  grid: { color: 'rgba(255,255,255,0.03)' },
+                  ticks: {
+                    color: 'rgba(255,255,255,0.3)',
+                    font: { family: 'Inter', size: 10 },
+                    callback: (val) => '$' + val.toLocaleString(),
+                  },
+                  border: { color: 'rgba(255,255,255,0.06)' },
                 },
-                border: { color: 'rgba(255,255,255,0.06)' },
               },
             },
-          },
-        });
+          });
+        }
+
+        // 2. Trigger chart animation only when scrolled into view
+        const chartObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting && !chartAnimated) {
+              chartAnimated = true;
+              createChart();
+              chartObserver.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.15 });
+        chartObserver.observe(document.getElementById('equity-curve'));
       })
       .catch(err => {
         console.error('Failed to load data:', err);
