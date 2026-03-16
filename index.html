@@ -131,6 +131,158 @@
     .live-dot {
       animation: live-dot 2s ease-in-out infinite;
     }
+
+    /* ── Waitlist Widget ── */
+    .waitlist-form {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+    .waitlist-input {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 15px;
+      color: #f5f6ff;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      min-height: 48px;
+    }
+    .waitlist-input::placeholder { color: rgba(255, 255, 255, 0.35); }
+    .waitlist-input:focus {
+      border-color: rgba(99, 102, 241, 0.5);
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .waitlist-submit {
+      background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
+      border: none;
+      border-radius: 10px;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+      min-height: 48px;
+      position: relative;
+    }
+    .waitlist-submit:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+    }
+    .waitlist-submit:disabled { opacity: 0.7; cursor: not-allowed; }
+    .waitlist-submit .spinner {
+      display: none;
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    .waitlist-submit.loading .btn-text { display: none; }
+    .waitlist-submit.loading .spinner { display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .waitlist-error {
+      color: #f87171; font-size: 13px; margin-top: 8px; display: none;
+    }
+    .waitlist-error.show { display: block; }
+
+    /* Success state */
+    .waitlist-success { display: none; }
+    .waitlist-widget.success .waitlist-form,
+    .waitlist-widget.success .waitlist-error { display: none; }
+    .waitlist-widget.success .waitlist-success { display: block; }
+
+    .success-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+    }
+    .success-icon {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .success-icon svg { width: 24px; height: 24px; color: #fff; }
+    .success-title { font-size: 20px; font-weight: 600; color: #f5f6ff; margin-bottom: 8px; }
+    .success-subtitle { font-size: 14px; color: rgba(255,255,255,0.6); margin-bottom: 20px; }
+
+    .stats-row { display: flex; gap: 12px; margin-bottom: 20px; }
+    .stat-box {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+      padding: 16px 12px;
+    }
+    .stat-value { font-size: 24px; font-weight: 700; color: #f5f6ff; margin-bottom: 4px; }
+    .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(255,255,255,0.5); }
+
+    .referral-section {
+      margin-top: 20px; padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .referral-bonus {
+      display: inline-block;
+      background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(129,140,248,0.2));
+      border: 1px solid rgba(99,102,241,0.3);
+      border-radius: 20px;
+      padding: 6px 14px; font-size: 13px; font-weight: 500; color: #a5b4fc;
+      margin-bottom: 16px;
+    }
+    .referral-label { font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 10px; }
+    .referral-link-box { display: flex; gap: 8px; margin-bottom: 16px; }
+    .referral-link-input {
+      flex: 1;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 10px 12px; font-size: 13px; color: #f5f6ff; font-family: monospace;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      min-height: 44px;
+    }
+    .copy-btn {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      padding: 10px 16px; font-size: 13px; font-weight: 500; color: #f5f6ff;
+      cursor: pointer; transition: background 0.2s; white-space: nowrap; min-height: 44px;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,0.15); }
+    .copy-btn.copied { background: rgba(34,197,94,0.2); border-color: rgba(34,197,94,0.3); color: #4ade80; }
+
+    .share-buttons { display: flex; gap: 10px; justify-content: center; }
+    .share-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .share-btn:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+    .share-btn svg { width: 18px; height: 18px; fill: #f5f6ff; }
+    .share-btn.twitter { background: rgba(29,161,242,0.15); border-color: rgba(29,161,242,0.3); }
+    .share-btn.twitter svg { fill: #1da1f2; }
+    .share-btn.whatsapp { background: rgba(37,211,102,0.15); border-color: rgba(37,211,102,0.3); }
+    .share-btn.whatsapp svg { fill: #25d366; }
+    .share-btn.telegram { background: rgba(0,136,204,0.15); border-color: rgba(0,136,204,0.3); }
+    .share-btn.telegram svg { fill: #0088cc; }
+
+    @media (max-width: 480px) {
+      .waitlist-form { flex-direction: column; }
+      .waitlist-submit { width: 100%; }
+      .stats-row { flex-direction: column; }
+    }
   </style>
 
   <script>
@@ -208,9 +360,32 @@
         11 yield sources
       </span>
     </div>
-    <div class="glass-card inline-flex items-center gap-2.5 px-5 py-2.5 text-success font-semibold text-sm">
+    <div class="glass-card inline-flex items-center gap-2.5 px-5 py-2.5 text-success font-semibold text-sm mb-8">
       <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
       Static allocation wins
+    </div>
+
+    <!-- Hero Waitlist (compact) -->
+    <div class="max-w-md mx-auto">
+      <div class="waitlist-widget" id="waitlistHero">
+        <form class="waitlist-form" onsubmit="return handleWaitlistSubmit(event, 'hero')">
+          <input type="email" class="waitlist-input" placeholder="Enter your email" required>
+          <button type="submit" class="waitlist-submit">
+            <span class="btn-text">Get early access</span>
+            <span class="spinner"></span>
+          </button>
+        </form>
+        <div class="waitlist-error"></div>
+        <div class="waitlist-success">
+          <div class="glass-card p-4 text-center">
+            <p class="text-success font-semibold text-sm mb-1">You're on the list!</p>
+            <p class="text-xs text-text-secondary">We'll notify you when it's your turn. Share your link below to move up.</p>
+          </div>
+        </div>
+      </div>
+      <p class="text-xs text-text-muted mt-2">
+        Join <span id="hero-waitlist-count" class="text-text-secondary font-medium">others</span> on the waitlist
+      </p>
     </div>
   </section>
 
@@ -346,15 +521,68 @@
 
   <div class="section-divider max-w-6xl mx-auto"></div>
 
-  <!-- CTA Section -->
+  <!-- CTA Waitlist Section -->
   <section class="max-w-6xl mx-auto px-5 py-16 md:py-20 text-center">
     <h2 class="text-2xl md:text-3xl font-bold mb-4 tracking-tight">Simple wins.</h2>
     <p class="text-base text-text-secondary mb-8 max-w-lg mx-auto">
       Static allocation with zero gas beats active rebalancing across all 3 AI strategies.
     </p>
-    <a href="https://unflat.finance" class="btn-primary inline-flex items-center justify-center text-white font-semibold px-8 py-3.5 text-base w-full md:w-auto">
-      Try Unflat
-    </a>
+
+    <div class="max-w-md mx-auto">
+      <div class="waitlist-widget" id="waitlistCTA">
+        <form class="waitlist-form" onsubmit="return handleWaitlistSubmit(event, 'cta')">
+          <input type="email" class="waitlist-input" placeholder="Enter your email" required>
+          <button type="submit" class="waitlist-submit">
+            <span class="btn-text">Get early access</span>
+            <span class="spinner"></span>
+          </button>
+        </form>
+        <div class="waitlist-error"></div>
+        <div class="waitlist-success">
+          <div class="success-card">
+            <div class="success-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div class="success-title">You're on the list!</div>
+            <div class="success-subtitle">We'll notify you when it's your turn</div>
+            <div class="stats-row">
+              <div class="stat-box">
+                <div class="stat-value" data-position>—</div>
+                <div class="stat-label">Your position</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-value" data-total>—</div>
+                <div class="stat-label">Total waiters</div>
+              </div>
+            </div>
+            <div class="referral-section">
+              <div class="referral-bonus">+0.5% APY per friend invited (max 3)</div>
+              <div class="referral-label">Share your link to move up the list</div>
+              <div class="referral-link-box">
+                <input type="text" class="referral-link-input" data-referral-link readonly>
+                <button type="button" class="copy-btn" onclick="copyReferralLink(this)">Copy</button>
+              </div>
+              <div class="share-buttons">
+                <button type="button" class="share-btn twitter" onclick="shareOnTwitter()" title="Share on X">
+                  <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                </button>
+                <button type="button" class="share-btn whatsapp" onclick="shareOnWhatsApp()" title="Share on WhatsApp">
+                  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                </button>
+                <button type="button" class="share-btn telegram" onclick="shareOnTelegram()" title="Share on Telegram">
+                  <svg viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="text-xs text-text-muted mt-3">
+        Join <span id="cta-waitlist-count" class="text-text-secondary font-medium">others</span> on the waitlist
+      </p>
+    </div>
   </section>
 
   <!-- Footer -->
@@ -692,6 +920,144 @@
           <tr><td colspan="8" class="px-5 py-8 text-center text-error text-sm">Failed to load leaderboard data</td></tr>
         `;
       });
+  </script>
+
+  <!-- Waitlist Logic -->
+  <script>
+    const WAITLIST_ID = '32433';
+    let currentReferralLink = '';
+
+    function getReferralFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('ref_id') || '';
+    }
+
+    // Fetch waitlist count on load
+    (async function fetchWaitlistCount() {
+      try {
+        const res = await fetch('https://api.getwaitlist.com/api/v1/waitlist/' + WAITLIST_ID);
+        if (res.ok) {
+          const data = await res.json();
+          const count = data.statistics?.total_signups || data.total_signups || data.waiter_count || data.total_waiters;
+          if (count) {
+            const formatted = Number(count).toLocaleString();
+            document.getElementById('hero-waitlist-count').textContent = formatted + ' others';
+            document.getElementById('cta-waitlist-count').textContent = formatted + ' others';
+          }
+        }
+      } catch (e) { /* silent */ }
+    })();
+
+    async function handleWaitlistSubmit(event, widgetId) {
+      event.preventDefault();
+
+      const widgetMap = { hero: 'waitlistHero', cta: 'waitlistCTA' };
+      const widget = document.getElementById(widgetMap[widgetId]);
+      const input = widget.querySelector('.waitlist-input');
+      const button = widget.querySelector('.waitlist-submit');
+      const errorEl = widget.querySelector('.waitlist-error');
+
+      const email = input.value.trim();
+      if (!email) return false;
+
+      button.classList.add('loading');
+      button.disabled = true;
+      errorEl.classList.remove('show');
+
+      try {
+        const body = { email: email, waitlist_id: parseInt(WAITLIST_ID) };
+        const refId = getReferralFromUrl();
+        if (refId) body.referral_link = refId;
+
+        const response = await fetch('https://api.getwaitlist.com/api/v1/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || data.message || 'Signup failed');
+
+        // Track events (fire if gtag exists, safe no-op otherwise)
+        if (typeof gtag === 'function') {
+          gtag('event', 'get_early_access', {
+            method: 'email_signup',
+            event_category: 'waitlist',
+            event_label: email
+          });
+          gtag('event', 'conversion', {
+            'send_to': 'AW-18015543014/DeRHCNGJvogcEOa9vY5D',
+            'value': 5.0,
+            'currency': 'EUR'
+          });
+        }
+
+        // Show success
+        const position = data.priority || data.current_priority || '—';
+        currentReferralLink = data.referral_link || '';
+
+        // Update CTA widget success card (full version)
+        const ctaWidget = document.getElementById('waitlistCTA');
+        const posEl = ctaWidget.querySelector('[data-position]');
+        const refEl = ctaWidget.querySelector('[data-referral-link]');
+        const totalEl = ctaWidget.querySelector('[data-total]');
+        if (posEl) posEl.textContent = position;
+        if (refEl) refEl.value = currentReferralLink;
+
+        // Fetch total
+        let total = '—';
+        try {
+          const statsRes = await fetch('https://api.getwaitlist.com/api/v1/waitlist/' + WAITLIST_ID);
+          if (statsRes.ok) {
+            const stats = await statsRes.json();
+            total = stats.statistics?.total_signups || stats.total_signups || stats.waiter_count || stats.total_waiters || '—';
+          }
+        } catch (e) { /* silent */ }
+        if (totalEl) totalEl.textContent = total;
+
+        // Show success on the submitted widget
+        widget.classList.add('success');
+
+        // Also mark the other widget as success (both show confirmed state)
+        const otherWidget = document.getElementById(widgetId === 'hero' ? 'waitlistCTA' : 'waitlistHero');
+        if (otherWidget) otherWidget.classList.add('success');
+
+      } catch (error) {
+        errorEl.textContent = error.message || 'Something went wrong. Please try again.';
+        errorEl.classList.add('show');
+      } finally {
+        button.classList.remove('loading');
+        button.disabled = false;
+      }
+
+      return false;
+    }
+
+    function copyReferralLink(btn) {
+      const input = btn.parentElement.querySelector('.referral-link-input');
+      navigator.clipboard.writeText(input.value).then(() => {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+      });
+    }
+
+    function shareOnTwitter() {
+      const text = encodeURIComponent("I just joined the unflat waitlist! Earn 4-7% APY on your savings. Join me:");
+      const url = encodeURIComponent(currentReferralLink);
+      window.open('https://twitter.com/intent/tweet?text=' + text + '&url=' + url, '_blank');
+    }
+
+    function shareOnWhatsApp() {
+      const text = encodeURIComponent('I just joined the unflat waitlist! Earn 4-7% APY on your savings. Join me: ' + currentReferralLink);
+      window.open('https://wa.me/?text=' + text, '_blank');
+    }
+
+    function shareOnTelegram() {
+      const text = encodeURIComponent("I just joined the unflat waitlist! Earn 4-7% APY on your savings.");
+      const url = encodeURIComponent(currentReferralLink);
+      window.open('https://t.me/share/url?url=' + url + '&text=' + text, '_blank');
+    }
   </script>
 </body>
 </html>
