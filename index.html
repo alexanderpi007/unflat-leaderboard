@@ -532,7 +532,7 @@
 
     <!-- Why AI agents lose -->
     <div class="glass-card p-5 mt-6">
-      <p class="text-sm text-text-secondary"><span class="font-medium text-text-primary">Why do AI agents lose?</span> Every rebalance incurs gas fees ($2.50–$5.00 per swap) plus 0.6% slippage on the full portfolio. Over 365 days, these costs compound — the most active bot paid $517 in gas and $455 in slippage alone. The static approach avoids all transaction costs entirely.</p>
+      <p class="text-sm text-text-secondary"><span class="font-medium text-text-primary">Why do AI agents lose?</span> Every rebalance incurs gas fees ($2.50–$5.00 per swap) plus 0.6% slippage on the full portfolio. These costs compound over time and can erode returns far more than the marginal APY gains from chasing higher yields. The static approach avoids all transaction costs entirely.</p>
     </div>
   </section>
 
@@ -743,13 +743,15 @@
       const lastValue = values[values.length - 1];
       const startCap = 1000;
 
-      // Rebalances up to currentDay
-      const rebalances = strategy.rebalanceDays.filter(d => d <= dayIndex).length;
+      // Rebalances up to currentDay (defensive: fall back to final count if array missing)
+      const rebalances = strategy.rebalanceDays
+        ? strategy.rebalanceDays.filter(d => d <= dayIndex).length
+        : (dayIndex >= strategy.dailyValues.length - 1 ? strategy.rebalances : 0);
 
-      // Friction from cumulative arrays
-      const gas = strategy.dailyGas[dayIndex] || 0;
-      const slip = strategy.dailySlippage[dayIndex] || 0;
-      const friction = strategy.dailyFriction[dayIndex] || 0;
+      // Friction from cumulative arrays (defensive: fall back to final values if arrays missing)
+      const gas = strategy.dailyGas ? (strategy.dailyGas[dayIndex] || 0) : (dayIndex >= strategy.dailyValues.length - 1 ? strategy.gasFees : 0);
+      const slip = strategy.dailySlippage ? (strategy.dailySlippage[dayIndex] || 0) : (dayIndex >= strategy.dailyValues.length - 1 ? strategy.slippageCosts : 0);
+      const friction = strategy.dailyFriction ? (strategy.dailyFriction[dayIndex] || 0) : (dayIndex >= strategy.dailyValues.length - 1 ? strategy.totalFriction : 0);
 
       // Net return
       const netReturn = ((lastValue - startCap) / startCap) * 100;
@@ -793,6 +795,15 @@
         const isPreLaunch = rawDay < 0;
         const isComplete = rawDay >= totalDays;
         const currentDay = Math.max(0, Math.min(rawDay, totalDays - 1));
+
+        // ── Simulation period (populate early, before any branching) ──
+        const simPeriod = data.simulationPeriod || '';
+        const simPeriodEl = document.getElementById('sim-period');
+        if (simPeriodEl && simPeriod) {
+          const parts = simPeriod.split(' to ');
+          const fmt = (d) => new Date(d + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+          simPeriodEl.textContent = fmt(parts[0]) + ' – ' + fmt(parts[1]);
+        }
 
         // ── Status labels ──
         const heroStatusEl = document.getElementById('hero-status');
@@ -843,15 +854,6 @@
         // Sort by net return descending
         progressive.sort((a, b) => b.netReturn - a.netReturn);
         progressive.forEach((s, i) => s.rank = i + 1);
-
-        // Show simulation period in methodology
-        const simPeriod = data.simulationPeriod || '';
-        const simPeriodEl = document.getElementById('sim-period');
-        if (simPeriodEl && simPeriod) {
-          const parts = simPeriod.split(' to ');
-          const fmt = (d) => new Date(d + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-          simPeriodEl.textContent = fmt(parts[0]) + ' – ' + fmt(parts[1]);
-        }
 
         const fmtDollar = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         const totalStrategies = progressive.length;
