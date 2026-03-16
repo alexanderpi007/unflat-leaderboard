@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Unflat vs AI Agents | DeFi Yield Leaderboard</title>
-  <meta name="description" content="Can AI beat a simple strategy? We tested 3 AI agents against Unflat's static allocation. See the results.">
+  <meta name="description" content="Can AI beat a simple strategy? Watch 3 AI agents compete against Unflat's static DeFi allocation in a live 365-day test.">
 
   <!-- Open Graph -->
   <meta property="og:title" content="Unflat vs AI Agents | DeFi Yield Leaderboard">
-  <meta property="og:description" content="We backtested 3 AI trading agents against Unflat's static Morpho vault allocation over 1 year. Static wins.">
+  <meta property="og:description" content="Watch 3 AI trading agents compete against Unflat's static Morpho vault allocation in a live 365-day test. Who wins?">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://unflat-leaderboard.vercel.app">
   <!-- TODO: Replace with actual OG image when available -->
@@ -17,7 +17,7 @@
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Unflat vs AI Agents | DeFi Yield Leaderboard">
-  <meta name="twitter:description" content="We backtested 3 AI trading agents against Unflat's static Morpho vault allocation over 1 year. Static wins.">
+  <meta name="twitter:description" content="Watch 3 AI trading agents compete against Unflat's static Morpho vault allocation in a live 365-day test. Who wins?">
   <meta name="twitter:image" content="https://unflat.finance/images/og-image.png">
 
   <!-- Canonical -->
@@ -430,8 +430,8 @@
       Can AI Beat a<br class="hidden md:block"> Simple Strategy?
     </h1>
     <h2 class="text-sm font-medium uppercase tracking-widest text-accent-light mb-5">Unflat DeFi Yield Leaderboard</h2>
-    <p class="text-base md:text-lg text-text-secondary mb-8 max-w-2xl mx-auto leading-relaxed">
-      We backtested 3 AI trading agents against Unflat's static Morpho vault allocation over 1 year using real historical APY data.
+    <p id="hero-subtitle" class="text-base md:text-lg text-text-secondary mb-8 max-w-2xl mx-auto leading-relaxed">
+      Watch 3 AI trading agents compete against Unflat's static Morpho vault allocation in a live 365-day test using real historical APY data.
     </p>
     <div class="flex flex-wrap justify-center gap-4 md:gap-8 text-sm font-medium text-text-secondary mb-8">
       <span class="flex items-center gap-2">
@@ -513,7 +513,7 @@
           <tr class="border-b border-border-subtle">
             <th scope="col" class="text-left px-5 py-3.5 font-medium text-xs uppercase tracking-wider text-text-muted">#</th>
             <th scope="col" class="text-left px-5 py-3.5 font-medium text-xs uppercase tracking-wider text-text-muted">Strategy</th>
-            <th scope="col" class="text-right px-5 py-3.5 font-medium text-xs uppercase tracking-wider text-text-muted">Ending Value</th>
+            <th scope="col" id="th-value" class="text-right px-5 py-3.5 font-medium text-xs uppercase tracking-wider text-text-muted">Current Value</th>
             <th scope="col" class="text-right px-5 py-3.5 font-medium text-xs uppercase tracking-wider text-text-muted">Net Return</th>
             <th scope="col" class="text-right px-5 py-3.5 font-medium text-xs uppercase tracking-wider text-text-muted">Friction</th>
             <th scope="col" class="text-right px-5 py-3.5 font-medium text-xs uppercase tracking-wider text-text-muted">Rebalances</th>
@@ -530,9 +530,9 @@
     <!-- Insight Cards -->
     <div id="insights-container" class="grid md:grid-cols-3 gap-4 mt-6"></div>
 
-    <!-- Why AI agents lose -->
+    <!-- Rebalancing costs -->
     <div class="glass-card p-5 mt-6">
-      <p class="text-sm text-text-secondary"><span class="font-medium text-text-primary">Why do AI agents lose?</span> Every rebalance incurs gas fees ($2.50–$5.00 per swap) plus 0.6% slippage on the full portfolio. These costs compound over time and can erode returns far more than the marginal APY gains from chasing higher yields. The static approach avoids all transaction costs entirely.</p>
+      <p class="text-sm text-text-secondary"><span class="font-medium text-text-primary" id="rebalancing-title">The cost of rebalancing</span> Every rebalance incurs gas fees ($2.50–$5.00 per swap) plus 0.6% slippage on the full portfolio. These costs compound over time and can erode returns far more than the marginal APY gains from chasing higher yields. The static approach avoids all transaction costs entirely.</p>
     </div>
   </section>
 
@@ -557,7 +557,7 @@
   <section id="methodology" class="max-w-6xl mx-auto px-5 py-12 md:py-16">
     <div class="mb-8">
       <h2 class="text-2xl md:text-3xl font-bold tracking-tight">Methodology</h2>
-      <p class="text-sm text-text-secondary mt-1">How the backtest was conducted</p>
+      <p id="methodology-subtitle" class="text-sm text-text-secondary mt-1">How the simulation works</p>
     </div>
 
     <div class="glass-card p-6 md:p-8">
@@ -630,9 +630,9 @@
 
   <!-- CTA Waitlist Section -->
   <section class="max-w-6xl mx-auto px-5 py-16 md:py-20 text-center">
-    <h2 class="text-2xl md:text-3xl font-bold mb-4 tracking-tight">Simple wins.</h2>
-    <p class="text-base text-text-secondary mb-8 max-w-lg mx-auto">
-      Static allocation with zero gas beats active rebalancing across all 3 AI strategies.
+    <h2 id="cta-heading" class="text-2xl md:text-3xl font-bold mb-4 tracking-tight">Which strategy will win?</h2>
+    <p id="cta-subtitle" class="text-base text-text-secondary mb-8 max-w-lg mx-auto">
+      Follow the 365-day experiment and see if simple beats smart.
     </p>
 
     <div class="max-w-md mx-auto">
@@ -838,6 +838,13 @@
           heroStatusText.textContent = 'Simulation complete — Static wins';
           statusDot.classList.remove('live-dot');
           statusLabel.textContent = 'Simulation ended ' + new Date(data.simulationPeriod.split(' to ')[1] + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+          // Revert to conclusive copy
+          document.getElementById('hero-subtitle').textContent = 'We backtested 3 AI trading agents against Unflat\'s static Morpho vault allocation over 1 year using real historical APY data. Static wins.';
+          document.getElementById('rebalancing-title').textContent = 'Why do AI agents lose?';
+          document.getElementById('cta-heading').textContent = 'Simple wins.';
+          document.getElementById('cta-subtitle').textContent = 'Static allocation with zero gas beats active rebalancing across all 3 AI strategies.';
+          document.getElementById('methodology-subtitle').textContent = 'How the backtest was conducted';
+          document.getElementById('th-value').textContent = 'Final Value';
         } else {
           heroStatusEl.classList.add('text-success');
           heroStatusText.textContent = 'Live — Day ' + (currentDay + 1) + ' of ' + totalDays;
