@@ -504,7 +504,7 @@ function runSimulation() {
 
   // Output JSON
   const output = {
-    simulationStartDate: '2026-02-24',
+    simulationStartDate: '2025-12-13',
     simulationPeriod: `${dateRange.from} to ${dateRange.to}`,
     startingCapital: CONFIG.startingCapital,
     durationDays: CONFIG.durationDays,
