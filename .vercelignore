@@ -1,0 +1,9 @@
+simulate.js
+scripts/
+data/
+node_modules/
+LEADERBOARD_SPEC.md
+DEPLOYMENT.md
+README.md
+package.json
+package-lock.json
