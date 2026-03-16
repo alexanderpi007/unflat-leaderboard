@@ -6,6 +6,38 @@
   <title>Unflat vs AI Agents | DeFi Yield Leaderboard</title>
   <meta name="description" content="Can AI beat a simple strategy? We tested 3 AI agents against Unflat's static allocation. See the results.">
 
+  <!-- Open Graph -->
+  <meta property="og:title" content="Unflat vs AI Agents | DeFi Yield Leaderboard">
+  <meta property="og:description" content="We backtested 3 AI trading agents against Unflat's static Morpho vault allocation over 1 year. Static wins.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://unflat-leaderboard.vercel.app">
+  <!-- TODO: Replace with actual OG image when available -->
+  <meta property="og:image" content="https://unflat.finance/images/og-image.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Unflat vs AI Agents | DeFi Yield Leaderboard">
+  <meta name="twitter:description" content="We backtested 3 AI trading agents against Unflat's static Morpho vault allocation over 1 year. Static wins.">
+  <meta name="twitter:image" content="https://unflat.finance/images/og-image.png">
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https://unflat-leaderboard.vercel.app">
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Unflat DeFi Yield Leaderboard",
+    "description": "Backtest comparison of 3 AI trading agents vs Unflat's static Morpho vault allocation over 365 days on Base.",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Unflat",
+      "url": "https://unflat.finance"
+    }
+  }
+  </script>
+
   <!-- Tailwind CSS (prebuilt) -->
   <link rel="stylesheet" href="tailwind.min.css">
 
@@ -79,10 +111,10 @@
 
     /* Loser row muted */
     .row-loser td {
-      opacity: 0.55;
+      opacity: 0.7;
     }
     .row-loser:hover td {
-      opacity: 0.8;
+      opacity: 0.9;
     }
 
     /* Section divider */
@@ -286,17 +318,77 @@
       .waitlist-submit { width: 100%; }
       .stats-row { flex-direction: column; }
     }
+
+    /* #10 Reduced motion: disable all animations */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      .insight-card { opacity: 1; transform: none; }
+    }
+
+    /* #11 Skip-to-content link */
+    .skip-link {
+      position: absolute;
+      top: -100%;
+      left: 16px;
+      z-index: 100;
+      background: #6366f1;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 0 0 8px 8px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
+    /* #13 Mobile nav */
+    .mobile-nav-toggle {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+      color: #f5f6ff;
+    }
+    .mobile-nav {
+      display: none;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .mobile-nav.open {
+      display: block;
+    }
+    @media (max-width: 767px) {
+      .mobile-nav-toggle { display: block; }
+    }
+
+    /* #14 Responsive chart height */
+    @media (max-width: 639px) {
+      .chart-container { height: 280px !important; }
+    }
+
+    /* #15 Hide Sharpe & Max DD on mobile */
+    @media (max-width: 639px) {
+      .hide-mobile { display: none; }
+    }
   </style>
 
 </head>
 
 <body class="bg-bg-primary text-text-primary min-h-screen antialiased">
 
+  <a href="#leaderboard" class="skip-link">Skip to leaderboard</a>
+
   <!-- Header -->
   <header class="border-b border-border-subtle">
     <div class="max-w-6xl mx-auto px-5 py-4 flex justify-between items-center">
       <a href="https://unflat.finance" class="flex items-center gap-2.5 group">
-        <svg viewBox="0 0 3199.3 938" class="h-6 w-auto fill-text-primary group-hover:fill-accent-light transition-colors duration-200">
+        <svg viewBox="0 0 3199.3 938" class="h-6 w-auto fill-text-primary group-hover:fill-accent-light transition-colors duration-200" aria-label="Unflat logo" role="img">
           <path d="M412,926.8h-114.6v-68.1c-15.5,22.7-34.6,41.5-57.3,56.4-22.7,14.9-51.1,22.4-85.1,22.4-51.9,0-90.7-16.3-116.4-48.8C12.8,856.2,0,812.5,0,757.6v-278.5h120.9v248.9c0,32.2,6,56.3,17.9,72.1,11.9,15.8,31,23.7,57.3,23.7s57.9-12.1,73.4-36.3c15.5-24.2,23.3-55.7,23.3-94.5v-214h119.1v447.8Z"/>
           <path d="M678.3,489.4c24.2-14,52.7-21,85.5-21,52.5,0,92.1,16,118.7,47.9,26.6,31.9,39.8,76.3,39.8,133v277.6h-120.9v-248c0-34-7.3-58.7-21.9-73.9-14.6-15.2-34.5-22.8-59.5-22.8s-59.5,11.8-74.8,35.4c-15.2,23.6-22.8,55.4-22.8,95.4v214h-118.2v-447.8h114.6v64.5c15.5-22.1,35.4-40.2,59.5-54.2h0Z"/>
           <path d="M1175.2,926.8h-118.2v-348.4h-90.5v-99.4h90.5v-22.4c0-29.3,4.2-54.3,12.5-75.2,8.4-20.9,19.7-38.1,34-51.5,14.3-13.4,31.4-23.4,51.1-30,19.7-6.6,41.2-9.8,64.5-9.8s31.8.8,45.2,2.2c13.4,1.5,27.6,3.4,42.5,5.8v109.3c-13.7-2.4-26-4.2-36.7-5.4-10.8-1.2-21.2-1.8-31.3-1.8-23.9,0-40.4,5.7-49.7,17-9.2,11.3-13.9,28.7-13.9,51.9v9.8h127.2v99.4h-127.2v348.4h0Z"/>
@@ -312,14 +404,26 @@
         <a href="#methodology" class="text-text-secondary hover:text-text-primary transition-colors duration-200">Methodology</a>
         <a href="https://unflat.finance" class="text-accent-light hover:text-white transition-colors duration-200">unflat.finance</a>
       </nav>
+      <button class="mobile-nav-toggle" onclick="document.getElementById('mobileNav').classList.toggle('open')" aria-label="Toggle navigation menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
     </div>
+    <nav id="mobileNav" class="mobile-nav">
+      <div class="max-w-6xl mx-auto px-5 py-3 flex flex-col gap-3 text-sm font-medium">
+        <a href="#leaderboard" class="text-text-secondary hover:text-text-primary" onclick="document.getElementById('mobileNav').classList.remove('open')">Leaderboard</a>
+        <a href="#equity-curve" class="text-text-secondary hover:text-text-primary" onclick="document.getElementById('mobileNav').classList.remove('open')">Performance</a>
+        <a href="#methodology" class="text-text-secondary hover:text-text-primary" onclick="document.getElementById('mobileNav').classList.remove('open')">Methodology</a>
+        <a href="https://unflat.finance" class="text-accent-light hover:text-white">unflat.finance</a>
+      </div>
+    </nav>
   </header>
 
   <!-- Hero Section -->
   <section class="max-w-6xl mx-auto px-5 pt-16 pb-12 md:pt-24 md:pb-16 text-center">
-    <h1 class="text-3xl md:text-5xl lg:text-6xl font-bold mb-5 leading-tight tracking-tight">
+    <h1 class="text-3xl md:text-5xl lg:text-6xl font-bold mb-3 leading-tight tracking-tight">
       Can AI Beat a<br class="hidden md:block"> Simple Strategy?
     </h1>
+    <h2 class="text-sm font-medium uppercase tracking-widest text-accent-light mb-5">Unflat DeFi Yield Leaderboard</h2>
     <p class="text-base md:text-lg text-text-secondary mb-8 max-w-2xl mx-auto leading-relaxed">
       We backtested 3 AI trading agents against Unflat's static Morpho vault allocation over 1 year using real historical APY data.
     </p>
@@ -357,8 +461,8 @@
             <span class="spinner"></span>
           </button>
         </form>
-        <div class="waitlist-error"></div>
-        <div class="waitlist-success">
+        <div class="waitlist-error" aria-live="polite"></div>
+        <div class="waitlist-success" aria-live="polite">
           <div class="glass-card p-4 text-center">
             <p class="text-success font-semibold text-sm mb-1">You're on the list!</p>
             <p class="text-xs text-text-secondary">We'll notify you when it's your turn. Share your link below to move up.</p>
@@ -387,17 +491,17 @@
     </div>
 
     <div class="overflow-x-auto table-scroll glass-card">
-      <table class="w-full min-w-[700px]">
+      <table class="w-full min-w-[540px]">
         <thead>
           <tr class="border-b border-border-subtle">
-            <th class="text-left px-5 py-3.5 font-medium text-xs uppercase tracking-wider text-text-muted">#</th>
-            <th class="text-left px-5 py-3.5 font-medium text-xs uppercase tracking-wider text-text-muted">Strategy</th>
-            <th class="text-right px-5 py-3.5 font-medium text-xs uppercase tracking-wider text-text-muted">Ending Value</th>
-            <th class="text-right px-5 py-3.5 font-medium text-xs uppercase tracking-wider text-text-muted">Net Return</th>
-            <th class="text-right px-5 py-3.5 font-medium text-xs uppercase tracking-wider text-text-muted">Gas Fees</th>
-            <th class="text-right px-5 py-3.5 font-medium text-xs uppercase tracking-wider text-text-muted">Rebalances</th>
-            <th class="text-right px-5 py-3.5 font-medium text-xs uppercase tracking-wider text-text-muted">Sharpe</th>
-            <th class="text-right px-5 py-3.5 font-medium text-xs uppercase tracking-wider text-text-muted">Max DD</th>
+            <th scope="col" class="text-left px-5 py-3.5 font-medium text-xs uppercase tracking-wider text-text-muted">#</th>
+            <th scope="col" class="text-left px-5 py-3.5 font-medium text-xs uppercase tracking-wider text-text-muted">Strategy</th>
+            <th scope="col" class="text-right px-5 py-3.5 font-medium text-xs uppercase tracking-wider text-text-muted">Ending Value</th>
+            <th scope="col" class="text-right px-5 py-3.5 font-medium text-xs uppercase tracking-wider text-text-muted">Net Return</th>
+            <th scope="col" class="text-right px-5 py-3.5 font-medium text-xs uppercase tracking-wider text-text-muted">Friction</th>
+            <th scope="col" class="text-right px-5 py-3.5 font-medium text-xs uppercase tracking-wider text-text-muted">Rebalances</th>
+            <th scope="col" class="text-right px-5 py-3.5 font-medium text-xs uppercase tracking-wider text-text-muted hide-mobile">Sharpe</th>
+            <th scope="col" class="text-right px-5 py-3.5 font-medium text-xs uppercase tracking-wider text-text-muted hide-mobile">Max DD</th>
           </tr>
         </thead>
         <tbody id="leaderboard-body">
@@ -411,7 +515,7 @@
 
     <!-- Why AI agents lose -->
     <div class="glass-card p-5 mt-6">
-      <p class="text-sm text-text-secondary"><span class="font-medium text-text-primary">Why do AI agents lose?</span> Frequent rebalancing incurs gas fees and slippage on every swap. Over 365 days, these costs compound and erode returns far more than the marginal APY gains from chasing higher yields. The static approach avoids all transaction costs entirely.</p>
+      <p class="text-sm text-text-secondary"><span class="font-medium text-text-primary">Why do AI agents lose?</span> Every rebalance incurs gas fees ($2.50–$5.00 per swap) plus 0.6% slippage on the full portfolio. Over 365 days, these costs compound — the most active bot paid $517 in gas and $455 in slippage alone. The static approach avoids all transaction costs entirely.</p>
     </div>
   </section>
 
@@ -424,7 +528,7 @@
       <p class="text-sm text-text-secondary mt-1">Daily portfolio value for each strategy ($1,000 starting capital)</p>
     </div>
     <div class="glass-card p-4 md:p-6">
-      <div class="relative" style="height: 400px;">
+      <div class="relative chart-container" style="height: 400px;">
         <canvas id="equityChart"></canvas>
       </div>
     </div>
@@ -523,8 +627,8 @@
             <span class="spinner"></span>
           </button>
         </form>
-        <div class="waitlist-error"></div>
-        <div class="waitlist-success">
+        <div class="waitlist-error" aria-live="polite"></div>
+        <div class="waitlist-success" aria-live="polite">
           <div class="success-card">
             <div class="success-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -548,16 +652,16 @@
               <div class="referral-label">Share your link to move up the list</div>
               <div class="referral-link-box">
                 <input type="text" class="referral-link-input" data-referral-link readonly>
-                <button type="button" class="copy-btn" onclick="copyReferralLink(this)">Copy</button>
+                <button type="button" class="copy-btn" onclick="copyReferralLink(this)" aria-label="Copy referral link">Copy</button>
               </div>
               <div class="share-buttons">
-                <button type="button" class="share-btn twitter" onclick="shareOnTwitter()" title="Share on X">
+                <button type="button" class="share-btn twitter" onclick="shareOnTwitter()" title="Share on X" aria-label="Share on X">
                   <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                 </button>
-                <button type="button" class="share-btn whatsapp" onclick="shareOnWhatsApp()" title="Share on WhatsApp">
+                <button type="button" class="share-btn whatsapp" onclick="shareOnWhatsApp()" title="Share on WhatsApp" aria-label="Share on WhatsApp">
                   <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                 </button>
-                <button type="button" class="share-btn telegram" onclick="shareOnTelegram()" title="Share on Telegram">
+                <button type="button" class="share-btn telegram" onclick="shareOnTelegram()" title="Share on Telegram" aria-label="Share on Telegram">
                   <svg viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
                 </button>
               </div>
@@ -575,7 +679,7 @@
   <footer class="border-t border-border-subtle">
     <div class="max-w-6xl mx-auto px-5 py-8 flex flex-col md:flex-row justify-between items-center gap-4">
       <a href="https://unflat.finance" class="group">
-        <svg viewBox="0 0 3199.3 938" class="h-4 w-auto fill-text-muted group-hover:fill-text-secondary transition-colors duration-200">
+        <svg viewBox="0 0 3199.3 938" class="h-4 w-auto fill-text-muted group-hover:fill-text-secondary transition-colors duration-200" aria-label="Unflat logo" role="img">
           <path d="M412,926.8h-114.6v-68.1c-15.5,22.7-34.6,41.5-57.3,56.4-22.7,14.9-51.1,22.4-85.1,22.4-51.9,0-90.7-16.3-116.4-48.8C12.8,856.2,0,812.5,0,757.6v-278.5h120.9v248.9c0,32.2,6,56.3,17.9,72.1,11.9,15.8,31,23.7,57.3,23.7s57.9-12.1,73.4-36.3c15.5-24.2,23.3-55.7,23.3-94.5v-214h119.1v447.8Z"/>
           <path d="M678.3,489.4c24.2-14,52.7-21,85.5-21,52.5,0,92.1,16,118.7,47.9,26.6,31.9,39.8,76.3,39.8,133v277.6h-120.9v-248c0-34-7.3-58.7-21.9-73.9-14.6-15.2-34.5-22.8-59.5-22.8s-59.5,11.8-74.8,35.4c-15.2,23.6-22.8,55.4-22.8,95.4v214h-118.2v-447.8h114.6v64.5c15.5-22.1,35.4-40.2,59.5-54.2h0Z"/>
           <path d="M1175.2,926.8h-118.2v-348.4h-90.5v-99.4h90.5v-22.4c0-29.3,4.2-54.3,12.5-75.2,8.4-20.9,19.7-38.1,34-51.5,14.3-13.4,31.4-23.4,51.1-30,19.7-6.6,41.2-9.8,64.5-9.8s31.8.8,45.2,2.2c13.4,1.5,27.6,3.4,42.5,5.8v109.3c-13.7-2.4-26-4.2-36.7-5.4-10.8-1.2-21.2-1.8-31.3-1.8-23.9,0-40.4,5.7-49.7,17-9.2,11.3-13.9,28.7-13.9,51.9v9.8h127.2v99.4h-127.2v348.4h0Z"/>
@@ -661,16 +765,16 @@
             <td class="px-5 py-4 text-right font-mono text-sm font-medium ${strategy.netReturn > 0 ? 'text-success' : 'text-error'}">
               <span data-animate="percent" data-target="${strategy.netReturn}">0.00%</span>
             </td>
-            <td class="px-5 py-4 text-right font-mono text-sm ${strategy.gasFees > 0 ? 'text-error/70' : 'text-text-muted'}">
-              <span data-animate="gas" data-target="${strategy.gasFees}">${strategy.gasFees > 0 ? '-' : ''}$0.00</span>
+            <td class="px-5 py-4 text-right font-mono text-sm ${strategy.totalFriction > 0 ? 'text-error/70' : 'text-text-muted'}" title="Gas: $${fmtDollar(strategy.gasFees)} + Slippage: $${fmtDollar(strategy.slippageCosts)}">
+              <span data-animate="gas" data-target="${strategy.totalFriction}">${strategy.totalFriction > 0 ? '-' : ''}$0.00</span>
             </td>
             <td class="px-5 py-4 text-right font-mono text-sm text-text-secondary">
               <span data-animate="int" data-target="${strategy.rebalances}">0</span>
             </td>
-            <td class="px-5 py-4 text-right font-mono text-sm text-text-secondary">
+            <td class="px-5 py-4 text-right font-mono text-sm text-text-secondary hide-mobile">
               ${strategy.sharpeRatio.toFixed(2)}
             </td>
-            <td class="px-5 py-4 text-right font-mono text-sm ${strategy.maxDrawdown > 0 ? 'text-error/70' : 'text-text-muted'}">
+            <td class="px-5 py-4 text-right font-mono text-sm hide-mobile ${strategy.maxDrawdown > 0 ? 'text-error/70' : 'text-text-muted'}">
               ${strategy.maxDrawdown > 0 ? '-' : ''}${strategy.maxDrawdown.toFixed(2)}%
             </td>
           `;
@@ -692,10 +796,10 @@
             animateValue(pctEl, 0, strategy.netReturn, duration,
               (v) => (v > 0 ? '+' : '') + v.toFixed(2) + '%');
 
-            // Gas Fees
+            // Total Friction
             const gasEl = row.querySelector('[data-animate="gas"]');
-            animateValue(gasEl, 0, strategy.gasFees, duration,
-              (v) => (strategy.gasFees > 0 ? '-' : '') + '$' + fmtDollar(v));
+            animateValue(gasEl, 0, strategy.totalFriction, duration,
+              (v) => (strategy.totalFriction > 0 ? '-' : '') + '$' + fmtDollar(v));
 
             // Rebalances
             const intEl = row.querySelector('[data-animate="int"]');
@@ -722,7 +826,7 @@
           <div class="glass-card p-5 insight-card">
             <p class="text-xs uppercase tracking-wider text-text-muted font-medium mb-2">Winner</p>
             <p class="text-lg font-bold text-accent-light">${winner.name}</p>
-            <p class="text-sm text-text-secondary mt-1">${winner.netReturn > 0 ? '+' : ''}${winner.netReturn.toFixed(2)}% return, ${winner.rebalances} rebalances, ${winner.gasFees === 0 ? 'zero gas' : '$' + fmtDollar(winner.gasFees) + ' gas'}</p>
+            <p class="text-sm text-text-secondary mt-1">${winner.netReturn > 0 ? '+' : ''}${winner.netReturn.toFixed(2)}% return, ${winner.rebalances} rebalances, ${winner.totalFriction === 0 ? 'zero friction' : '$' + fmtDollar(winner.totalFriction) + ' friction'}</p>
           </div>
           <div class="glass-card p-5 insight-card">
             <p class="text-xs uppercase tracking-wider text-text-muted font-medium mb-2">Best Risk-Adjusted</p>
@@ -732,7 +836,7 @@
           <div class="glass-card p-5 insight-card">
             <p class="text-xs uppercase tracking-wider text-text-muted font-medium mb-2">Most Active</p>
             <p class="text-lg font-bold text-text-secondary">${loser.name}</p>
-            <p class="text-sm text-text-secondary mt-1">${loser.rebalances} rebalances, $${fmtDollar(loser.gasFees)} in gas fees</p>
+            <p class="text-sm text-text-secondary mt-1">${loser.rebalances} rebalances, $${fmtDollar(loser.totalFriction)} total friction (gas + slippage)</p>
           </div>
         `;
 

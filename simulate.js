@@ -188,6 +188,8 @@ function runUnflatStrategy(apyData) {
     endingValue: capital,
     grossEarnings: capital - CONFIG.startingCapital,
     gasFees,
+    slippageCosts: 0,
+    totalFriction: 0,
     netEarnings: capital - CONFIG.startingCapital - gasFees,
     netReturn: ((capital - CONFIG.startingCapital) / CONFIG.startingCapital) * 100,
     rebalances,
@@ -199,6 +201,7 @@ function runUnflatStrategy(apyData) {
 function runGPT4oStrategy(allApyData) {
   let capital = CONFIG.startingCapital;
   let gasFees = 0;
+  let slippageCosts = 0;
   let rebalances = 0;
   let currentAllocation = [
     { vaultId: 'steakhouse-hy', weight: 0.45 },
@@ -232,6 +235,7 @@ function runGPT4oStrategy(allApyData) {
       const rebalanceCost = calcRebalanceGas(oldIds, newIds);
       const slippageCost = capital * CONFIG.slippagePerSwap * 3;
       gasFees += rebalanceCost;
+      slippageCosts += slippageCost;
       capital -= (rebalanceCost + slippageCost);
       currentAllocation = newIds.map(id => ({ vaultId: id, weight: 1/3 }));
       rebalances++;
@@ -246,8 +250,10 @@ function runGPT4oStrategy(allApyData) {
   return {
     name: 'GPT-4o Agent',
     endingValue: capital,
-    grossEarnings: capital + gasFees - CONFIG.startingCapital,
+    grossEarnings: capital + gasFees + slippageCosts - CONFIG.startingCapital,
     gasFees,
+    slippageCosts,
+    totalFriction: gasFees + slippageCosts,
     netEarnings: capital - CONFIG.startingCapital,
     netReturn: ((capital - CONFIG.startingCapital) / CONFIG.startingCapital) * 100,
     rebalances,
@@ -259,6 +265,7 @@ function runGPT4oStrategy(allApyData) {
 function runClaudeStrategy(allApyData) {
   let capital = CONFIG.startingCapital;
   let gasFees = 0;
+  let slippageCosts = 0;
   let rebalances = 0;
   let currentAllocation = [...UNFLAT_ALLOCATION];
   const dailyValues = [];
@@ -288,6 +295,7 @@ function runClaudeStrategy(allApyData) {
       const rebalanceCost = calcRebalanceGas(oldIds, topThree);
       const slippageCost = capital * CONFIG.slippagePerSwap * 3;
       gasFees += rebalanceCost;
+      slippageCosts += slippageCost;
       capital -= (rebalanceCost + slippageCost);
       currentAllocation = topThree.map(id => ({ vaultId: id, weight: 1/3 }));
       rebalances++;
@@ -302,8 +310,10 @@ function runClaudeStrategy(allApyData) {
   return {
     name: 'Claude Sonnet Agent',
     endingValue: capital,
-    grossEarnings: capital + gasFees - CONFIG.startingCapital,
+    grossEarnings: capital + gasFees + slippageCosts - CONFIG.startingCapital,
     gasFees,
+    slippageCosts,
+    totalFriction: gasFees + slippageCosts,
     netEarnings: capital - CONFIG.startingCapital,
     netReturn: ((capital - CONFIG.startingCapital) / CONFIG.startingCapital) * 100,
     rebalances,
@@ -315,6 +325,7 @@ function runClaudeStrategy(allApyData) {
 function runDeepSeekStrategy(allApyData) {
   let capital = CONFIG.startingCapital;
   let gasFees = 0;
+  let slippageCosts = 0;
   let rebalances = 0;
   let currentAllocation = [
     { vaultId: 'clearstar-reactor', weight: 0.50 },
@@ -355,6 +366,7 @@ function runDeepSeekStrategy(allApyData) {
       const rebalanceCost = calcRebalanceGas(oldIds, topThree);
       const slippageCost = capital * CONFIG.slippagePerSwap * 3;
       gasFees += rebalanceCost;
+      slippageCosts += slippageCost;
       capital -= (rebalanceCost + slippageCost);
       currentAllocation = topThree.map(id => ({ vaultId: id, weight: 1/3 }));
       rebalances++;
@@ -369,8 +381,10 @@ function runDeepSeekStrategy(allApyData) {
   return {
     name: 'DeepSeek Agent',
     endingValue: capital,
-    grossEarnings: capital + gasFees - CONFIG.startingCapital,
+    grossEarnings: capital + gasFees + slippageCosts - CONFIG.startingCapital,
     gasFees,
+    slippageCosts,
+    totalFriction: gasFees + slippageCosts,
     netEarnings: capital - CONFIG.startingCapital,
     netReturn: ((capital - CONFIG.startingCapital) / CONFIG.startingCapital) * 100,
     rebalances,
@@ -451,6 +465,8 @@ function runSimulation() {
     console.log(`   Ending Value: $${r.endingValue.toFixed(2)}`);
     console.log(`   Net Return: ${r.netReturn.toFixed(2)}%`);
     console.log(`   Gas Fees: $${r.gasFees.toFixed(2)}`);
+    console.log(`   Slippage: $${r.slippageCosts.toFixed(2)}`);
+    console.log(`   Total Friction: $${r.totalFriction.toFixed(2)}`);
     console.log(`   Rebalances: ${r.rebalances}`);
     console.log(`   Sharpe: ${r.sharpeRatio.toFixed(2)}`);
     console.log('');

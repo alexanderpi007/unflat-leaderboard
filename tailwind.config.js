@@ -5,7 +5,7 @@ module.exports = {
     'text-error/70',
     'bg-accent/20',
     'hover:bg-white/[0.02]',
-    'min-w-[700px]',
+    'min-w-[540px]',
   ],
   theme: {
     extend: {
