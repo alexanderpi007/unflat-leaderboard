@@ -6,16 +6,19 @@
   <title>Unflat vs AI Agents | DeFi Yield Leaderboard</title>
   <meta name="description" content="Can AI beat a simple strategy? We tested 3 AI agents against Unflat's static allocation. See the results.">
 
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind CSS (prebuilt) -->
+  <link rel="stylesheet" href="tailwind.min.css">
 
   <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 
   <!-- Google Fonts — Inter as fallback for PP Frama -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2300041b'/%3E%3Cpath d='M16 4 L4 10 L4 18 C4 24 9 29 16 30 C23 29 28 24 28 18 L28 10 Z' fill='%236366f1'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='Inter,sans-serif' font-weight='700' font-size='14' fill='white'%3EU%3C/text%3E%3C/svg%3E">
 
   <style>
     body {
@@ -285,28 +288,6 @@
     }
   </style>
 
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            'bg-primary': '#00041b',
-            'bg-card': 'rgba(255, 255, 255, 0.03)',
-            'text-primary': '#f5f6ff',
-            'text-secondary': 'rgba(255, 255, 255, 0.5)',
-            'text-muted': 'rgba(255, 255, 255, 0.35)',
-            'accent': '#6366f1',
-            'accent-light': '#818cf8',
-            'accent-blue': '#6198ff',
-            'success': '#4ade80',
-            'error': '#f87171',
-            'border-subtle': 'rgba(255, 255, 255, 0.08)',
-            'border-hover': 'rgba(255, 255, 255, 0.15)',
-          }
-        }
-      }
-    }
-  </script>
 </head>
 
 <body class="bg-bg-primary text-text-primary min-h-screen antialiased">
@@ -366,6 +347,7 @@
     </div>
 
     <!-- Hero Waitlist (compact) -->
+    <p class="text-sm text-text-secondary mb-4">Get early access to automated DeFi yield optimization — no active management needed.</p>
     <div class="max-w-md mx-auto">
       <div class="waitlist-widget" id="waitlistHero">
         <form class="waitlist-form" onsubmit="return handleWaitlistSubmit(event, 'hero')">
@@ -400,8 +382,7 @@
       </div>
       <!-- 3. Dynamic last-updated with live pulse -->
       <div class="hidden md:flex items-center gap-2 text-xs text-text-muted">
-        <span class="w-1.5 h-1.5 rounded-full bg-success live-dot"></span>
-        Updated <span id="last-updated"></span>
+        Simulation ended <span id="last-updated"></span>
       </div>
     </div>
 
@@ -427,6 +408,11 @@
 
     <!-- Insight Cards -->
     <div id="insights-container" class="grid md:grid-cols-3 gap-4 mt-6"></div>
+
+    <!-- Why AI agents lose -->
+    <div class="glass-card p-5 mt-6">
+      <p class="text-sm text-text-secondary"><span class="font-medium text-text-primary">Why do AI agents lose?</span> Frequent rebalancing incurs gas fees and slippage on every swap. Over 365 days, these costs compound and erode returns far more than the marginal APY gains from chasing higher yields. The static approach avoids all transaction costs entirely.</p>
+    </div>
   </section>
 
   <div class="section-divider max-w-6xl mx-auto"></div>
@@ -489,7 +475,7 @@
             </span>
             <div>
               <p class="font-medium text-sm text-text-primary">No cherry-picking</p>
-              <p class="text-sm text-text-secondary mt-0.5">Full 365-day simulation, no manual intervention</p>
+              <p class="text-sm text-text-secondary mt-0.5">Full 365-day simulation (<span id="sim-period"></span>), no manual intervention</p>
             </div>
           </div>
         </div>
@@ -558,7 +544,7 @@
               </div>
             </div>
             <div class="referral-section">
-              <div class="referral-bonus">+0.5% APY per friend invited (max 3)</div>
+              <div class="referral-bonus">Priority access for each friend you invite</div>
               <div class="referral-label">Share your link to move up the list</div>
               <div class="referral-link-box">
                 <input type="text" class="referral-link-input" data-referral-link readonly>
@@ -628,9 +614,20 @@
     fetch('backtest-data.json')
       .then(res => res.json())
       .then(data => {
-        // 3. Dynamic last-updated — always visitor's current date
-        document.getElementById('last-updated').textContent =
-          new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        // 3. Last-updated — show actual simulation end date
+        const simPeriod = data.simulationPeriod || '';
+        const simEndDate = simPeriod.split(' to ')[1] || '';
+        document.getElementById('last-updated').textContent = simEndDate
+          ? new Date(simEndDate + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+          : '';
+
+        // Show simulation period in methodology
+        const simPeriodEl = document.getElementById('sim-period');
+        if (simPeriodEl && simPeriod) {
+          const parts = simPeriod.split(' to ');
+          const fmt = (d) => new Date(d + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+          simPeriodEl.textContent = fmt(parts[0]) + ' – ' + fmt(parts[1]);
+        }
 
         const fmtDollar = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         const totalStrategies = data.strategies.length;
@@ -818,6 +815,11 @@
         let chartAnimated = false;
 
         function createChart() {
+          if (typeof Chart === 'undefined') {
+            // Chart.js still loading (deferred), retry shortly
+            setTimeout(createChart, 100);
+            return;
+          }
           equityChart = new Chart(ctx, {
             type: 'line',
             data: { labels, datasets: allDatasets },
@@ -983,7 +985,7 @@
           gtag('event', 'get_early_access', {
             method: 'email_signup',
             event_category: 'waitlist',
-            event_label: email
+            event_label: 'waitlist_signup'
           });
           gtag('event', 'conversion', {
             'send_to': 'AW-18015543014/DeRHCNGJvogcEOa9vY5D',
@@ -1043,18 +1045,18 @@
     }
 
     function shareOnTwitter() {
-      const text = encodeURIComponent("I just joined the unflat waitlist! Earn 4-7% APY on your savings. Join me:");
+      const text = encodeURIComponent("I just joined the unflat waitlist! Discover optimized DeFi yield strategies. Join me:");
       const url = encodeURIComponent(currentReferralLink);
       window.open('https://twitter.com/intent/tweet?text=' + text + '&url=' + url, '_blank');
     }
 
     function shareOnWhatsApp() {
-      const text = encodeURIComponent('I just joined the unflat waitlist! Earn 4-7% APY on your savings. Join me: ' + currentReferralLink);
+      const text = encodeURIComponent('I just joined the unflat waitlist! Discover optimized DeFi yield strategies. Join me: ' + currentReferralLink);
       window.open('https://wa.me/?text=' + text, '_blank');
     }
 
     function shareOnTelegram() {
-      const text = encodeURIComponent("I just joined the unflat waitlist! Earn 4-7% APY on your savings.");
+      const text = encodeURIComponent("I just joined the unflat waitlist! Discover optimized DeFi yield strategies.");
       const url = encodeURIComponent(currentReferralLink);
       window.open('https://t.me/share/url?url=' + url + '&text=' + text, '_blank');
     }
