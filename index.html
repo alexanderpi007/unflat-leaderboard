@@ -376,6 +376,12 @@
     @media (max-width: 639px) {
       .hide-mobile { display: none; }
     }
+
+    /* Pre-launch overlay */
+    .pre-launch-overlay {
+      text-align: center;
+      padding: 80px 20px;
+    }
   </style>
 
 </head>
@@ -445,9 +451,19 @@
         11 yield sources
       </span>
     </div>
-    <div class="glass-card inline-flex items-center gap-2.5 px-5 py-2.5 text-success font-semibold text-sm mb-8">
-      <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
-      Static allocation wins
+    <div id="hero-status" class="glass-card inline-flex items-center gap-2.5 px-5 py-2.5 font-semibold text-sm mb-4">
+      <span class="w-2 h-2 rounded-full bg-success live-dot"></span>
+      <span id="hero-status-text">Loading...</span>
+    </div>
+    <!-- Day counter + progress bar -->
+    <div id="day-counter" class="max-w-xs mx-auto mb-8" style="display:none;">
+      <div class="flex justify-between text-xs text-text-muted mb-1.5">
+        <span>Day <span id="current-day-num" class="text-text-primary font-semibold">0</span> of 365</span>
+        <span id="day-percent" class="text-text-secondary">0%</span>
+      </div>
+      <div class="w-full h-1.5 rounded-full bg-border-subtle overflow-hidden">
+        <div id="day-progress-bar" class="h-full rounded-full bg-accent transition-all duration-500" style="width: 0%"></div>
+      </div>
     </div>
 
     <!-- Hero Waitlist (compact) -->
@@ -484,9 +500,10 @@
         <h2 class="text-2xl md:text-3xl font-bold tracking-tight">Leaderboard</h2>
         <p class="text-sm text-text-secondary mt-1">Ranked by net return after gas and slippage</p>
       </div>
-      <!-- 3. Dynamic last-updated with live pulse -->
-      <div class="hidden md:flex items-center gap-2 text-xs text-text-muted">
-        Simulation ended <span id="last-updated"></span>
+      <!-- 3. Dynamic status label -->
+      <div id="leaderboard-status" class="hidden md:flex items-center gap-2 text-xs text-text-muted">
+        <span id="status-dot" class="w-1.5 h-1.5 rounded-full bg-success live-dot"></span>
+        <span id="status-label">Loading...</span>
       </div>
     </div>
 
@@ -695,17 +712,14 @@
     </div>
   </footer>
 
-  <!-- Load Data & Render -->
+  <!-- Load Data & Render (Progressive Reveal) -->
   <script>
     // ── Animation Utilities ──
-
-    // 1. Animated counter using requestAnimationFrame
     function animateValue(el, start, end, duration, formatter) {
       const startTime = performance.now();
       function tick(now) {
         const elapsed = now - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        // Ease-out cubic for a satisfying deceleration
         const eased = 1 - Math.pow(1 - progress, 3);
         const current = start + (end - start) * eased;
         el.textContent = formatter(current);
@@ -714,18 +728,124 @@
       requestAnimationFrame(tick);
     }
 
+    // ── Progressive Reveal Helpers ──
+    function calcCurrentDay(startDate) {
+      const start = new Date(startDate + 'T00:00:00');
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const diffMs = today - start;
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      return diffDays;
+    }
+
+    function computeProgressiveMetrics(strategy, dayIndex) {
+      const values = strategy.dailyValues.slice(0, dayIndex + 1);
+      const lastValue = values[values.length - 1];
+      const startCap = 1000;
+
+      // Rebalances up to currentDay
+      const rebalances = strategy.rebalanceDays.filter(d => d <= dayIndex).length;
+
+      // Friction from cumulative arrays
+      const gas = strategy.dailyGas[dayIndex] || 0;
+      const slip = strategy.dailySlippage[dayIndex] || 0;
+      const friction = strategy.dailyFriction[dayIndex] || 0;
+
+      // Net return
+      const netReturn = ((lastValue - startCap) / startCap) * 100;
+
+      // Sharpe ratio from sliced dailyValues
+      const dailyReturns = values.map((v, i) => i === 0 ? 0 : (v - values[i - 1]) / values[i - 1]);
+      const avgReturn = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length;
+      const stdDev = Math.sqrt(dailyReturns.reduce((sum, r) => sum + Math.pow(r - avgReturn, 2), 0) / dailyReturns.length);
+      const sharpeRatio = stdDev > 0 ? (avgReturn / stdDev) : 0;
+
+      // Max drawdown from sliced dailyValues
+      let peak = values[0];
+      let maxDD = 0;
+      values.forEach(v => {
+        if (v > peak) peak = v;
+        const dd = (peak - v) / peak;
+        if (dd > maxDD) maxDD = dd;
+      });
+
+      return {
+        name: strategy.name,
+        endingValue: lastValue,
+        netReturn,
+        gasFees: gas,
+        slippageCosts: slip,
+        totalFriction: friction,
+        rebalances,
+        sharpeRatio,
+        maxDrawdown: maxDD * 100,
+        dailyValues: values,
+      };
+    }
+
     // ── Main ──
     fetch('backtest-data.json')
       .then(res => res.json())
       .then(data => {
-        // 3. Last-updated — show actual simulation end date
-        const simPeriod = data.simulationPeriod || '';
-        const simEndDate = simPeriod.split(' to ')[1] || '';
-        document.getElementById('last-updated').textContent = simEndDate
-          ? new Date(simEndDate + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
-          : '';
+        const startDate = data.simulationStartDate || '2026-02-24';
+        const rawDay = calcCurrentDay(startDate);
+        const totalDays = data.durationDays;
+        const isPreLaunch = rawDay < 0;
+        const isComplete = rawDay >= totalDays;
+        const currentDay = Math.max(0, Math.min(rawDay, totalDays - 1));
+
+        // ── Status labels ──
+        const heroStatusEl = document.getElementById('hero-status');
+        const heroStatusText = document.getElementById('hero-status-text');
+        const statusDot = document.getElementById('status-dot');
+        const statusLabel = document.getElementById('status-label');
+        const dayCounter = document.getElementById('day-counter');
+
+        if (isPreLaunch) {
+          // Edge case: before simulation starts
+          const startFormatted = new Date(startDate + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+          heroStatusEl.classList.add('text-text-secondary');
+          heroStatusEl.querySelector('.live-dot').classList.remove('bg-success');
+          heroStatusEl.querySelector('.live-dot').classList.add('bg-text-muted');
+          heroStatusText.textContent = 'Simulation starts ' + startFormatted;
+          statusDot.classList.remove('bg-success', 'live-dot');
+          statusDot.classList.add('bg-text-muted');
+          statusLabel.textContent = 'Starts ' + startFormatted;
+
+          // Show pre-launch message instead of leaderboard
+          document.getElementById('leaderboard-body').innerHTML = `
+            <tr><td colspan="8" class="px-5 py-12 text-center">
+              <p class="text-text-secondary text-sm mb-2">The simulation has not started yet.</p>
+              <p class="text-text-muted text-xs">Come back on ${startFormatted} to see the first day of data.</p>
+            </td></tr>
+          `;
+          return;
+        }
+
+        if (isComplete) {
+          heroStatusEl.classList.add('text-success');
+          heroStatusText.textContent = 'Simulation complete — Static wins';
+          statusDot.classList.remove('live-dot');
+          statusLabel.textContent = 'Simulation ended ' + new Date(data.simulationPeriod.split(' to ')[1] + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        } else {
+          heroStatusEl.classList.add('text-success');
+          heroStatusText.textContent = 'Live — Day ' + (currentDay + 1) + ' of ' + totalDays;
+          statusLabel.textContent = 'Live — Day ' + (currentDay + 1) + ' of ' + totalDays;
+          dayCounter.style.display = 'block';
+          const pct = Math.round(((currentDay + 1) / totalDays) * 100);
+          document.getElementById('current-day-num').textContent = currentDay + 1;
+          document.getElementById('day-percent').textContent = pct + '%';
+          document.getElementById('day-progress-bar').style.width = pct + '%';
+        }
+
+        // ── Compute progressive metrics for each strategy ──
+        const progressive = data.strategies.map(s => computeProgressiveMetrics(s, currentDay));
+        // Sort by net return descending
+        progressive.sort((a, b) => b.netReturn - a.netReturn);
+        progressive.forEach((s, i) => s.rank = i + 1);
 
         // Show simulation period in methodology
+        const simPeriod = data.simulationPeriod || '';
         const simPeriodEl = document.getElementById('sim-period');
         if (simPeriodEl && simPeriod) {
           const parts = simPeriod.split(' to ');
@@ -734,12 +854,12 @@
         }
 
         const fmtDollar = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        const totalStrategies = data.strategies.length;
+        const totalStrategies = progressive.length;
 
         // ── Leaderboard Table with Animated Counters ──
         const tbody = document.getElementById('leaderboard-body');
 
-        data.strategies.forEach((strategy, idx) => {
+        progressive.forEach((strategy, idx) => {
           const row = document.createElement('tr');
           const isUnflat = strategy.name.includes('Unflat');
           const isWinner = strategy.rank === 1;
@@ -751,7 +871,6 @@
           else rowClass += ' hover:bg-white/[0.02]';
           row.className = rowClass;
 
-          // Create cells with data-animate placeholders
           row.innerHTML = `
             <td class="px-5 py-4">
               <span class="text-lg font-bold ${isWinner ? 'text-accent-light' : 'text-text-muted'}">${strategy.rank}</span>
@@ -781,33 +900,27 @@
 
           tbody.appendChild(row);
 
-          // 1. Staggered counter animation: row N starts at N*200ms
           const delay = idx * 200;
           const duration = 1500;
 
           setTimeout(() => {
-            // Ending Value
             const dollarEl = row.querySelector('[data-animate="dollar"]');
             animateValue(dollarEl, 0, strategy.endingValue, duration,
               (v) => '$' + fmtDollar(v));
 
-            // Net Return
             const pctEl = row.querySelector('[data-animate="percent"]');
             animateValue(pctEl, 0, strategy.netReturn, duration,
               (v) => (v > 0 ? '+' : '') + v.toFixed(2) + '%');
 
-            // Total Friction
             const gasEl = row.querySelector('[data-animate="gas"]');
             animateValue(gasEl, 0, strategy.totalFriction, duration,
               (v) => (strategy.totalFriction > 0 ? '-' : '') + '$' + fmtDollar(v));
 
-            // Rebalances
             const intEl = row.querySelector('[data-animate="int"]');
             animateValue(intEl, 0, strategy.rebalances, duration,
               (v) => Math.round(v).toString());
           }, delay);
 
-          // 6. Shimmer on winner row after counters finish
           if (isWinner) {
             setTimeout(() => {
               row.querySelectorAll('[data-animate]').forEach(el => {
@@ -817,14 +930,14 @@
           }
         });
 
-        // ── 4. Insight Cards with staggered entrance ──
-        const winner = data.strategies[0];
-        const bestSharpe = data.strategies.reduce((a, b) => a.sharpeRatio > b.sharpeRatio ? a : b);
-        const loser = data.strategies[data.strategies.length - 1];
+        // ── Insight Cards ──
+        const winner = progressive[0];
+        const bestSharpe = progressive.reduce((a, b) => a.sharpeRatio > b.sharpeRatio ? a : b);
+        const loser = progressive[progressive.length - 1];
 
         document.getElementById('insights-container').innerHTML = `
           <div class="glass-card p-5 insight-card">
-            <p class="text-xs uppercase tracking-wider text-text-muted font-medium mb-2">Winner</p>
+            <p class="text-xs uppercase tracking-wider text-text-muted font-medium mb-2">${isComplete ? 'Winner' : 'Leading'}</p>
             <p class="text-lg font-bold text-accent-light">${winner.name}</p>
             <p class="text-sm text-text-secondary mt-1">${winner.netReturn > 0 ? '+' : ''}${winner.netReturn.toFixed(2)}% return, ${winner.rebalances} rebalances, ${winner.totalFriction === 0 ? 'zero friction' : '$' + fmtDollar(winner.totalFriction) + ' friction'}</p>
           </div>
@@ -855,9 +968,10 @@
         }, { threshold: 0.2 });
         if (insightCards.length > 0) cardObserver.observe(insightCards[0]);
 
-        // ── 2. Equity Curve Chart with progressive draw ──
+        // ── Equity Curve Chart (progressive — only plot to currentDay) ──
         const ctx = document.getElementById('equityChart').getContext('2d');
-        const labels = Array.from({ length: data.durationDays }, (_, i) => i);
+        const numDays = currentDay + 1;
+        const labels = Array.from({ length: numDays }, (_, i) => i);
 
         const chartColors = {
           'Unflat (Static)':     { color: '#818cf8', width: 3, dash: [] },
@@ -866,14 +980,45 @@
           'Claude Sonnet Agent': { color: 'rgba(255,255,255,0.15)', width: 1.5, dash: [6, 3] },
         };
 
-        // Separate Unflat dataset from bot datasets for staggered reveal
-        const unflatStrategy = data.strategies.find(s => s.name.includes('Unflat'));
-        const botStrategies = data.strategies.filter(s => !s.name.includes('Unflat'));
+        const unflatProg = progressive.find(s => s.name.includes('Unflat'));
+        const botProg = progressive.filter(s => !s.name.includes('Unflat'));
 
-        const unflatStyle = chartColors[unflatStrategy.name];
+        const unflatStyle = chartColors[unflatProg.name];
+
+        // Pulsing dot plugin for live endpoint
+        const pulsingDotPlugin = {
+          id: 'pulsingDot',
+          afterDraw(chart) {
+            if (isComplete) return;
+            const meta = chart.getDatasetMeta(0);
+            if (!meta.data.length) return;
+            const lastPoint = meta.data[meta.data.length - 1];
+            const ctxDraw = chart.ctx;
+            const x = lastPoint.x;
+            const y = lastPoint.y;
+            const time = Date.now() / 1000;
+            const pulse = 0.5 + 0.5 * Math.sin(time * 3);
+            const radius = 3 + pulse * 3;
+
+            ctxDraw.save();
+            ctxDraw.beginPath();
+            ctxDraw.arc(x, y, radius, 0, Math.PI * 2);
+            ctxDraw.fillStyle = `rgba(129, 140, 248, ${0.3 + pulse * 0.4})`;
+            ctxDraw.fill();
+            ctxDraw.beginPath();
+            ctxDraw.arc(x, y, 3, 0, Math.PI * 2);
+            ctxDraw.fillStyle = '#818cf8';
+            ctxDraw.fill();
+            ctxDraw.restore();
+
+            // Request next frame for continuous animation
+            requestAnimationFrame(() => chart.draw());
+          }
+        };
+
         const unflatDataset = {
-          label: unflatStrategy.name,
-          data: unflatStrategy.dailyValues,
+          label: unflatProg.name,
+          data: unflatProg.dailyValues,
           borderColor: unflatStyle.color,
           borderWidth: unflatStyle.width,
           borderDash: unflatStyle.dash,
@@ -884,12 +1029,12 @@
           fill: false,
         };
 
-        const botDatasets = botStrategies.map(s => {
+        const botDatasets = botProg.map(s => {
           const style = chartColors[s.name] || { color: 'rgba(255,255,255,0.2)', width: 1.5, dash: [4, 4] };
           return {
             label: s.name,
             data: s.dailyValues,
-            borderColor: 'transparent', // start hidden
+            borderColor: 'transparent',
             borderWidth: style.width,
             borderDash: style.dash,
             pointRadius: 0,
@@ -897,13 +1042,13 @@
             pointHoverBackgroundColor: style.color,
             tension: 0.3,
             fill: false,
-            _targetColor: style.color, // stash for later reveal
+            _targetColor: style.color,
           };
         });
 
         const baselineDataset = {
           label: '$1,000 start',
-          data: new Array(data.durationDays).fill(1000),
+          data: new Array(numDays).fill(1000),
           borderColor: 'rgba(255, 255, 255, 0.08)',
           borderWidth: 1,
           borderDash: [4, 4],
@@ -920,22 +1065,20 @@
 
         function createChart() {
           if (typeof Chart === 'undefined') {
-            // Chart.js still loading (deferred), retry shortly
             setTimeout(createChart, 100);
             return;
           }
           equityChart = new Chart(ctx, {
             type: 'line',
             data: { labels, datasets: allDatasets },
+            plugins: isComplete ? [] : [pulsingDotPlugin],
             options: {
               responsive: true,
               maintainAspectRatio: false,
-              // Progressive draw: Unflat draws over 2s
               animation: {
                 duration: 2000,
                 easing: 'easeOutQuart',
                 onComplete: () => {
-                  // After Unflat finishes drawing, fade in bot lines
                   setTimeout(() => {
                     botDatasets.forEach(ds => {
                       ds.borderColor = ds._targetColor;
@@ -1008,7 +1151,7 @@
           });
         }
 
-        // 2. Trigger chart animation only when scrolled into view
+        // Trigger chart animation only when scrolled into view
         const chartObserver = new IntersectionObserver((entries) => {
           entries.forEach(entry => {
             if (entry.isIntersecting && !chartAnimated) {

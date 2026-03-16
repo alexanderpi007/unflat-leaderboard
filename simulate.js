@@ -175,12 +175,19 @@ function runUnflatStrategy(apyData) {
   let gasFees = 0;
   let rebalances = 0;
   const dailyValues = [];
+  const rebalanceDays = [];
+  const dailyGas = [];
+  const dailySlippage = [];
+  const dailyFriction = [];
 
   for (let day = 0; day < CONFIG.durationDays; day++) {
     const avgAPY = calculateWeightedAPY(UNFLAT_ALLOCATION, apyData, day);
     const earnings = dailyAccrual(capital, avgAPY);
     capital += earnings;
     dailyValues.push(capital);
+    dailyGas.push(0);
+    dailySlippage.push(0);
+    dailyFriction.push(0);
   }
 
   return {
@@ -194,6 +201,10 @@ function runUnflatStrategy(apyData) {
     netReturn: ((capital - CONFIG.startingCapital) / CONFIG.startingCapital) * 100,
     rebalances,
     dailyValues,
+    rebalanceDays,
+    dailyGas,
+    dailySlippage,
+    dailyFriction,
   };
 }
 
@@ -209,6 +220,10 @@ function runGPT4oStrategy(allApyData) {
     { vaultId: 'gauntlet-frontier', weight: 0.20 },
   ];
   const dailyValues = [];
+  const rebalanceDays = [];
+  const dailyGas = [];
+  const dailySlippage = [];
+  const dailyFriction = [];
 
   for (let day = 0; day < CONFIG.durationDays; day++) {
     if (capital < 100) {
@@ -216,6 +231,9 @@ function runGPT4oStrategy(allApyData) {
       const earnings = dailyAccrual(capital, avgAPY);
       capital += earnings;
       dailyValues.push(capital);
+      dailyGas.push(gasFees);
+      dailySlippage.push(slippageCosts);
+      dailyFriction.push(gasFees + slippageCosts);
       continue;
     }
 
@@ -239,12 +257,16 @@ function runGPT4oStrategy(allApyData) {
       capital -= (rebalanceCost + slippageCost);
       currentAllocation = newIds.map(id => ({ vaultId: id, weight: 1/3 }));
       rebalances++;
+      rebalanceDays.push(day);
     }
 
     const avgAPY = calculateWeightedAPY(currentAllocation, allApyData, day);
     const earnings = dailyAccrual(capital, avgAPY);
     capital += earnings;
     dailyValues.push(capital);
+    dailyGas.push(gasFees);
+    dailySlippage.push(slippageCosts);
+    dailyFriction.push(gasFees + slippageCosts);
   }
 
   return {
@@ -258,6 +280,10 @@ function runGPT4oStrategy(allApyData) {
     netReturn: ((capital - CONFIG.startingCapital) / CONFIG.startingCapital) * 100,
     rebalances,
     dailyValues,
+    rebalanceDays,
+    dailyGas,
+    dailySlippage,
+    dailyFriction,
   };
 }
 
@@ -269,6 +295,10 @@ function runClaudeStrategy(allApyData) {
   let rebalances = 0;
   let currentAllocation = [...UNFLAT_ALLOCATION];
   const dailyValues = [];
+  const rebalanceDays = [];
+  const dailyGas = [];
+  const dailySlippage = [];
+  const dailyFriction = [];
 
   for (let day = 0; day < CONFIG.durationDays; day++) {
     if (capital < 100) {
@@ -276,6 +306,9 @@ function runClaudeStrategy(allApyData) {
       const earnings = dailyAccrual(capital, avgAPY);
       capital += earnings;
       dailyValues.push(capital);
+      dailyGas.push(gasFees);
+      dailySlippage.push(slippageCosts);
+      dailyFriction.push(gasFees + slippageCosts);
       continue;
     }
 
@@ -299,12 +332,16 @@ function runClaudeStrategy(allApyData) {
       capital -= (rebalanceCost + slippageCost);
       currentAllocation = topThree.map(id => ({ vaultId: id, weight: 1/3 }));
       rebalances++;
+      rebalanceDays.push(day);
     }
 
     const avgAPY = calculateWeightedAPY(currentAllocation, allApyData, day);
     const earnings = dailyAccrual(capital, avgAPY);
     capital += earnings;
     dailyValues.push(capital);
+    dailyGas.push(gasFees);
+    dailySlippage.push(slippageCosts);
+    dailyFriction.push(gasFees + slippageCosts);
   }
 
   return {
@@ -318,6 +355,10 @@ function runClaudeStrategy(allApyData) {
     netReturn: ((capital - CONFIG.startingCapital) / CONFIG.startingCapital) * 100,
     rebalances,
     dailyValues,
+    rebalanceDays,
+    dailyGas,
+    dailySlippage,
+    dailyFriction,
   };
 }
 
@@ -333,6 +374,10 @@ function runDeepSeekStrategy(allApyData) {
     { vaultId: 'moonwell-flagship', weight: 0.20 },
   ];
   const dailyValues = [];
+  const rebalanceDays = [];
+  const dailyGas = [];
+  const dailySlippage = [];
+  const dailyFriction = [];
 
   for (let day = 0; day < CONFIG.durationDays; day++) {
     if (capital < 100) {
@@ -340,6 +385,9 @@ function runDeepSeekStrategy(allApyData) {
       const earnings = dailyAccrual(capital, avgAPY);
       capital += earnings;
       dailyValues.push(capital);
+      dailyGas.push(gasFees);
+      dailySlippage.push(slippageCosts);
+      dailyFriction.push(gasFees + slippageCosts);
       continue;
     }
 
@@ -370,12 +418,16 @@ function runDeepSeekStrategy(allApyData) {
       capital -= (rebalanceCost + slippageCost);
       currentAllocation = topThree.map(id => ({ vaultId: id, weight: 1/3 }));
       rebalances++;
+      rebalanceDays.push(day);
     }
 
     const avgAPY = calculateWeightedAPY(currentAllocation, allApyData, day);
     const earnings = dailyAccrual(capital, avgAPY);
     capital += earnings;
     dailyValues.push(capital);
+    dailyGas.push(gasFees);
+    dailySlippage.push(slippageCosts);
+    dailyFriction.push(gasFees + slippageCosts);
   }
 
   return {
@@ -389,6 +441,10 @@ function runDeepSeekStrategy(allApyData) {
     netReturn: ((capital - CONFIG.startingCapital) / CONFIG.startingCapital) * 100,
     rebalances,
     dailyValues,
+    rebalanceDays,
+    dailyGas,
+    dailySlippage,
+    dailyFriction,
   };
 }
 
@@ -441,10 +497,14 @@ function runSimulation() {
 
     // Keep dailyValues for equity curve chart (round to 2 decimals to save space)
     result.dailyValues = result.dailyValues.map(v => Math.round(v * 100) / 100);
+    result.dailyGas = result.dailyGas.map(v => Math.round(v * 100) / 100);
+    result.dailySlippage = result.dailySlippage.map(v => Math.round(v * 100) / 100);
+    result.dailyFriction = result.dailyFriction.map(v => Math.round(v * 100) / 100);
   });
 
   // Output JSON
   const output = {
+    simulationStartDate: '2026-02-24',
     simulationPeriod: `${dateRange.from} to ${dateRange.to}`,
     startingCapital: CONFIG.startingCapital,
     durationDays: CONFIG.durationDays,
