@@ -5,6 +5,4 @@ node_modules/
 LEADERBOARD_SPEC.md
 DEPLOYMENT.md
 README.md
-package.json
-package-lock.json
 tailwind.config.js
