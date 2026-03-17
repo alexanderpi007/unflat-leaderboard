@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1200">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 1200px;
+      height: 630px;
+      font-family: 'Inter', sans-serif;
+      background: #00041b;
+      color: #fff;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Subtle radial glow */
+    .bg-glow {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 20% 50%, rgba(99,102,241,0.15) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 60% at 85% 30%, rgba(129,140,248,0.10) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    /* Grid pattern overlay */
+    .bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      width: 100%;
+      height: 100%;
+      padding: 48px 56px;
+      gap: 48px;
+    }
+
+    /* Left column */
+    .left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 24px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .logo svg {
+      height: 28px;
+      width: auto;
+      fill: #fff;
+    }
+
+    .headline {
+      font-size: 44px;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      color: #f5f6ff;
+    }
+
+    .headline .accent {
+      background: linear-gradient(135deg, #818cf8, #6366f1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subheadline {
+      font-size: 20px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.5;
+    }
+
+    .cta-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-top: 8px;
+    }
+
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.01em;
+    }
+
+    .social-proof {
+      font-size: 14px;
+      color: rgba(255,255,255,0.45);
+      font-weight: 500;
+    }
+
+    .social-proof span {
+      color: rgba(255,255,255,0.7);
+      font-weight: 600;
+    }
+
+    /* Right column */
+    .right {
+      width: 420px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    /* APY badge */
+    .apy-badge {
+      align-self: flex-end;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, rgba(99,102,241,0.25), rgba(129,140,248,0.15));
+      border: 1px solid rgba(99,102,241,0.4);
+      border-radius: 12px;
+    }
+
+    .apy-badge .value {
+      font-size: 36px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #a5b4fc, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .apy-badge .label {
+      font-size: 14px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Leaderboard card */
+    .leaderboard-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .card-live {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #34d399;
+    }
+
+    .card-live .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #34d399;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      padding: 14px 20px;
+      gap: 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .row:last-child { border-bottom: none; }
+
+    .rank {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .rank-1 { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
+    .rank-2 { background: linear-gradient(135deg, #94a3b8, #64748b); color: #fff; }
+    .rank-3 { background: linear-gradient(135deg, #b45309, #92400e); color: #fff; }
+
+    .user-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .user-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #f5f6ff;
+    }
+
+    .user-refs {
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+    }
+
+    .user-apy {
+      font-size: 15px;
+      font-weight: 700;
+      color: #34d399;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .user-apy-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.35);
+      text-align: right;
+    }
+
+    .apy-col {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 1px;
+    }
+
+    /* Bottom border accent */
+    .bottom-accent {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #6366f1, #818cf8, #6366f1);
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-glow"></div>
+  <div class="bg-grid"></div>
+
+  <div class="container">
+    <!-- Left: Copy -->
+    <div class="left">
+      <div class="logo">
+        <svg viewBox="0 0 3199.3 938" aria-label="Unflat logo">
+          <path d="M412,926.8h-114.6v-68.1c-15.5,22.7-34.6,41.5-57.3,56.4-22.7,14.9-51.1,22.4-85.1,22.4-51.9,0-90.7-16.3-116.4-48.8C12.8,856.2,0,812.5,0,757.6v-278.5h120.9v248.9c0,32.2,6,56.3,17.9,72.1,11.9,15.8,31,23.7,57.3,23.7s57.9-12.1,73.4-36.3c15.5-24.2,23.3-55.7,23.3-94.5v-214h119.1v447.8Z"/>
+          <path d="M678.3,489.4c24.2-14,52.7-21,85.5-21,52.5,0,92.1,16,118.7,47.9,26.6,31.9,39.8,76.3,39.8,133v277.6h-120.9v-248c0-34-7.3-58.7-21.9-73.9-14.6-15.2-34.5-22.8-59.5-22.8s-59.5,11.8-74.8,35.4c-15.2,23.6-22.8,55.4-22.8,95.4v214h-118.2v-447.8h114.6v64.5c15.5-22.1,35.4-40.2,59.5-54.2h0Z"/>
+          <path d="M1175.2,926.8h-118.2v-348.4h-90.5v-99.4h90.5v-22.4c0-29.3,4.2-54.3,12.5-75.2,8.4-20.9,19.7-38.1,34-51.5,14.3-13.4,31.4-23.4,51.1-30,19.7-6.6,41.2-9.8,64.5-9.8s31.8.8,45.2,2.2c13.4,1.5,27.6,3.4,42.5,5.8v109.3c-13.7-2.4-26-4.2-36.7-5.4-10.8-1.2-21.2-1.8-31.3-1.8-23.9,0-40.4,5.7-49.7,17-9.2,11.3-13.9,28.7-13.9,51.9v9.8h127.2v99.4h-127.2v348.4h0Z"/>
+          <path d="M1493.9,300h-119.1v626.9h119.1V300Z"/>
+          <path d="M2262.5,927.7c-16.4,2.4-32.1,3.6-47,3.6-41.8,0-74.2-10.7-97.2-32.2-23-21.5-34.5-57.9-34.5-109.3v-211.3h-81.5v-99.4h81.5v-120h118.2v120h113.7v99.4h-113.7v194.3c0,14.3,3.6,24.6,10.7,30.9s18.5,9.4,34,9.4,18.1-.4,27.3-1.3c9.2-.9,21.9-2.8,38.1-5.8v111.9c-16.7,4.2-33.3,7.5-49.7,9.8h0Z"/>
+          <path d="M1938.2,538.8h0c-6.8-11.9-15.1-22.2-24.9-31-32.5-29.2-81.6-43.9-147.3-43.9s-26.8.6-39.4,2c-32.3,3.4-61,11.1-85.9,23.1-34.6,16.7-59.4,42.1-74.3,76.1l-4.4,12.8,43.2,14.9h0l56.9,19.6c2.9-4.2,6.2-8.1,9.9-11.5,7.8-7.2,16.7-13,26.9-17.5,10.1-4.5,20.9-7.7,32.2-9.8,11.3-2.1,23-3.1,34.9-3.1,26.9,0,46.6,4.2,59.1,12.5,12.5,8.4,18.8,19.1,18.8,32.2v7.2c0,10.1-7.8,16.1-23.3,17.9l-61.8,5.4-60.9,5.3c-15.5,1.3-30,4.2-43.5,8.6-4.7,1.6-9.3,3.3-13.8,5.3-17.3,7.5-32.4,17.2-45.2,29.1s-22.8,26.1-30,42.5c-7.2,16.4-10.8,34.8-10.8,55.1s3.7,39.8,11.2,56.9c7.5,17,17.9,31.6,31.3,43.9,13.4,12.2,29.4,21.8,47.9,28.7,18.5,6.9,38.8,10.3,60.9,10.3s10.9-.2,16.2-.5c28-1.9,51.4-8.9,70.3-21,22.4-14.3,39.5-30.4,51.5-48.3v60.9h118.2v-276.7c0-43.8-7.9-79.4-23.8-106.9h0ZM1843.9,740.6c0,12.5-2.4,24.3-7.2,35.4-4.8,11.1-11.6,20.8-20.6,29.1-9,8.4-19.8,15.1-32.7,20.2-8.5,3.4-17.6,5.6-27.3,6.7-4.9.6-10,.9-15.2.9-20.9,0-36.7-4.3-47.5-13-10.7-8.6-16.1-20.1-16.1-34.5s4.6-23.1,13.9-31.8c9.2-8.6,23.2-14.5,41.6-17.4l58.8-7.1,52.3-6.3v17.9Z"/>
+          <path d="M3194.9,360c-15.4,11.4-162.8-21.1-211.2-37.8-9.4-3.2-14.4-7.2-18.7-10.7s-6.9-7-9.6-10.8c-13.5-19.3-15.3-31.7-19.1-50.4l-17.3,41.8c-2.7,6.6-10.7,12.3-17.8,12.8l-149.9,12.5c-25.2,1.6-49.8-8.2-67.1-26.7l-80.4-97.1c-5-5.4-6.8-15.3-4-22.1l17.3-41.6c-15.9,10.6-35.4,18-58.6,22.1-2,.4-4,.6-6.1.9-5.9.7-12.1.9-18.4.5-12.7-.6-26.1-3.4-40.2-8.2-108.8-36.8-177.7-81.5-177.7-101.4-.6-11.9,12.7-14.3,39.4-16L2858,0c14.9-.8,35.2,7.6,45.1,18.7l286.4,315.7c11.2,12.9,12.5,22.1,5.3,25.6Z"/>
+        </svg>
+      </div>
+
+      <div class="headline">
+        Unflat Waitlist<br>
+        <span class="accent">Leaderboard</span>
+      </div>
+
+      <div class="subheadline">
+        Climb the Ranks, Unlock Up to<br>
+        <strong style="color:rgba(255,255,255,0.85)">+2% Bonus APY</strong> on Your DeFi Savings
+      </div>
+
+      <div class="cta-row">
+        <div class="cta-btn">
+          Join the Waitlist
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+        <div class="social-proof">
+          <span>1,000+</span> early users already in
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Leaderboard + APY -->
+    <div class="right">
+      <div class="apy-badge">
+        <span class="value">9% APY</span>
+        <span class="label">Up to</span>
+      </div>
+
+      <div class="leaderboard-card">
+        <div class="card-header">
+          <span class="card-title">Top Ranks</span>
+          <span class="card-live"><span class="dot"></span> Live</span>
+        </div>
+        <div class="row">
+          <div class="rank rank-1">#1</div>
+          <div class="user-info">
+            <div class="user-name">vitalik.eth</div>
+            <div class="user-refs">42 referrals</div>
+          </div>
+          <div class="apy-col">
+            <div class="user-apy">9.0%</div>
+            <div class="user-apy-label">APY</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="rank rank-2">#2</div>
+          <div class="user-info">
+            <div class="user-name">defi_whale.eth</div>
+            <div class="user-refs">28 referrals</div>
+          </div>
+          <div class="apy-col">
+            <div class="user-apy">8.5%</div>
+            <div class="user-apy-label">APY</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="rank rank-3">#3</div>
+          <div class="user-info">
+            <div class="user-name">alpha_farmer</div>
+            <div class="user-refs">19 referrals</div>
+          </div>
+          <div class="apy-col">
+            <div class="user-apy">8.2%</div>
+            <div class="user-apy-label">APY</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-accent"></div>
+</body>
+</html>
